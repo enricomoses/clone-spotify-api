@@ -42,4 +42,25 @@ class Artist extends Model
             'password' => 'hashed',
         ];
     }
+
+    public function galleries()
+    {
+        return $this->hasMany(ArtistGallery::class, 'id_artist', 'id_artist');
+    }
+    public function albums()
+    {
+        return $this->belongsToMany(Album::class, 'artist_album', 'id_artist', 'id_album');
+    }
+    public function songs()
+    {
+        return $this->belongsToMany(Song::class, 'song_artist', 'id_artist', 'id_song');
+    }
+    public function concerts()
+    {
+        return $this->belongsToMany(Concert::class, 'artist_concert', 'id_artist', 'id_concert');
+    }
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'user_followartist', 'id_artist', 'id_user');
+    }
 }

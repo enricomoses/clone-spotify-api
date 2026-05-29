@@ -23,4 +23,13 @@ class Album extends Model
         'release',
         'cover_image'
     ];
+
+    public function songs()
+    {
+        return $this->hasMany(Song::class, 'id_album', 'id_album');
+    }
+    public function artists()
+    {
+        return $this->belongsToMany(Artist::class, 'artist_album', 'id_album', 'id_artist');
+    }
 }
