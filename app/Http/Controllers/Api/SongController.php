@@ -1,0 +1,63 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Song;
+use Illuminate\Http\Request;
+
+class SongController extends Controller
+{
+    public function index()
+    {
+        // Menampilkan semua lagu beserta data albumnya (jika ada)
+        $songs = Song::with('album')->get();
+        return response()->json(['message' => 'Data lagu berhasil diambil', 'data' => $songs], 200);
+    }
+
+    public function store(Request $request)
+    {
+        // CONSTRAINT / VALIDASI ATURAN BISNIS
+        $validated = $request->validate([
+            'id_song' => 'required|string|unique:song,id_song', // ID tidak boleh kembar
+            'title' => 'required|string|max:150',
+            'duration' => 'required|integer|min:1', // Constraint: Durasi harus angka positif (> 0)
+            'id_album' => 'nullable|string|exists:album,id_album' // Constraint FK: Album harus terdaftar
+        ]);
+
+        $song = Song::create($validated);
+        return response()->json(['message' => 'Lagu berhasil ditambahkan', 'data' => $song], 201);
+    }
+
+    public function show($id)
+    {
+        $song = Song::with('album')->find($id);
+        if (!$song) return response()->json(['message' => 'Lagu tidak ditemukan'], 404);
+
+        return response()->json(['message' => 'Detail lagu', 'data' => $song], 200);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $song = Song::find($id);
+        if (!$song) return response()->json(['message' => 'Lagu tidak ditemukan'], 404);
+
+        $validated = $request->validate([
+            'title' => 'sometimes|required|string|max:150',
+            'duration' => 'sometimes|required|integer|min:1',
+            'id_album' => 'nullable|string|exists:album,id_album'
+        ]);
+
+        $song->update($validated);
+        return response()->json(['message' => 'Lagu berhasil diupdate', 'data' => $song], 200);
+    }
+
+    public function destroy($id)
+    {
+        $song = Song::find($id);
+        if (!$song) return response()->json(['message' => 'Lagu tidak ditemukan'], 404);
+
+        $song->delete();
+        return response()->json(['message' => 'Lagu berhasil dihapus'], 200);
+    }
+}
