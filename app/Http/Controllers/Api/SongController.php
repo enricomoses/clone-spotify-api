@@ -22,7 +22,8 @@ class SongController extends Controller
             'id_song' => 'required|string|unique:song,id_song', // ID tidak boleh kembar
             'title' => 'required|string|max:150',
             'duration' => 'required|integer|min:1', // Constraint: Durasi harus angka positif (> 0)
-            'id_album' => 'nullable|string|exists:album,id_album' // Constraint FK: Album harus terdaftar
+            'id_album' => 'nullable|string|exists:album,id_album', // Constraint FK: Album harus terdaftar
+            'audio_url' => 'required|string',
         ]);
 
         $song = Song::create($validated);
@@ -45,7 +46,8 @@ class SongController extends Controller
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:150',
             'duration' => 'sometimes|required|integer|min:1',
-            'id_album' => 'nullable|string|exists:album,id_album'
+            'id_album' => 'nullable|string|exists:album,id_album',
+            'audio_url' => 'sometimes|required|string',
         ]);
 
         $song->update($validated);
@@ -59,5 +61,21 @@ class SongController extends Controller
 
         $song->delete();
         return response()->json(['message' => 'Lagu berhasil dihapus'], 200);
+    }
+
+    public function discoverWeekly()
+    {
+        // Mengambil lagu beserta jumlah riwayat putarannya (Agregasi COUNT)
+        // lalu diurutkan dari yang terbanyak, dibatasi 50 lagu.
+        $topSongs = Song::with('album')
+            ->withCount('streamingHistories')
+            ->orderBy('streaming_histories_count', 'desc')
+            ->take(50)
+            ->get();
+
+        return response()->json([
+            'message' => 'Discover Weekly (Top 50 Lagu)',
+            'data' => $topSongs
+        ], 200);
     }
 }

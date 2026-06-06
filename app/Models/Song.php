@@ -19,7 +19,8 @@ class Song extends Model
         'id_song',
         'title',
         'duration',
-        'id_album'
+        'id_album',
+        'audio_url',
     ];
 
     public function album()
