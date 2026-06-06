@@ -70,6 +70,9 @@ Route::delete('/concerts/{id}/artists/{artist_id}', [ConcertController::class, '
 Route::post('/artists/{id}/concerts', [ArtistController::class, 'addConcertToArtist']);
 Route::delete('/artists/{id}/concerts/{concert_id}', [ArtistController::class, 'removeConcertFromArtist']);
 
+// --- EPISODE CUSTOM ROUTES ---
+Route::post('/episodes/{id}/stream', [EpisodeController::class, 'recordStream']);
+
 // ==========================================
 // 3. RESOURCE ROUTES (CRUD Standar)
 // ==========================================
