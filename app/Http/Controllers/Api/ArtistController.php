@@ -22,4 +22,43 @@ class ArtistController extends Controller
 
         return response()->json(['message' => 'Detail artist', 'data' => $artist], 200);
     }
+
+    // --- FITUR KONSER ---
+    public function getConcerts($id)
+    {
+        $artist = Artist::with('concerts')->where('id_artist', $id)->first();
+        if (!$artist) return response()->json(['message' => 'Artis tidak ditemukan'], 404);
+
+        return response()->json(['data' => $artist->concerts], 200);
+    }
+
+    // --- FITUR GALERI ---
+    public function getGallery($id)
+    {
+        $artist = Artist::with('galleries')->where('id_artist', $id)->first();
+        return response()->json(['data' => $artist->galleries], 200);
+    }
+
+    public function addGallery(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'id_gallery' => 'required|string|unique:artist_gallery,id_gallery',
+            'image_url' => 'required|string',
+            'description_pict' => 'nullable|string'
+        ]);
+
+        $validated['id_artist'] = $id;
+        $validated['uploaded_at'] = now();
+
+        $gallery = \App\Models\ArtistGallery::create($validated);
+        return response()->json(['message' => 'Foto galeri ditambahkan', 'data' => $gallery], 201);
+    }
+
+    public function removeGallery($id, $gallery_id)
+    {
+        \App\Models\ArtistGallery::where('id_gallery', $gallery_id)
+            ->where('id_artist', $id)
+            ->delete();
+        return response()->json(['message' => 'Foto galeri dihapus'], 200);
+    }
 }
