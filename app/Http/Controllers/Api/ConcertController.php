@@ -39,7 +39,7 @@ class ConcertController extends Controller
 
     public function update(Request $request, $id)
     {
-        $concert = Concert::find($id);
+        $concert = Concert::query()->find($id);
         if (!$concert) return response()->json(['message' => 'Konser tidak ditemukan'], 404);
 
         $validated = $request->validate([
@@ -55,10 +55,9 @@ class ConcertController extends Controller
 
     public function destroy($id)
     {
-        $concert = Concert::find($id);
-        if (!$concert) return response()->json(['message' => 'Konser tidak ditemukan'], 404);
-
-        $concert->delete();
+        if (!Concert::destroy($id)) {
+            return response()->json(['message' => 'Konser tidak ditemukan'], 404);
+        }
         return response()->json(['message' => 'Konser berhasil dihapus'], 200);
     }
 }

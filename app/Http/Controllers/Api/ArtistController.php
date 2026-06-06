@@ -58,9 +58,16 @@ class ArtistController extends Controller
 
     public function removeGallery($id, $gallery_id)
     {
-        \App\Models\ArtistGallery::where('id_gallery', $gallery_id)
+        $deleted = \App\Models\ArtistGallery::query()
+            ->where('id_gallery', $gallery_id)
             ->where('id_artist', $id)
             ->delete();
+
+        // Tambahan validasi jika foto sudah tidak ada di database
+        if (!$deleted) {
+            return response()->json(['message' => 'Foto galeri tidak ditemukan'], 404);
+        }
+
         return response()->json(['message' => 'Foto galeri dihapus'], 200);
     }
 }

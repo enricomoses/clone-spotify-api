@@ -16,7 +16,7 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::query()->where('email', $request->email)->first();
 
         // Mengecek apakah user ada dan password cocok
         if (!$user || !Hash::check($request->password, $user->password)) {

@@ -43,7 +43,7 @@ class EpisodeController extends Controller
 
     public function update(Request $request, $id)
     {
-        $episode = Episode::find($id);
+        $episode = Episode::query()->find($id);
         if (!$episode) return response()->json(['message' => 'Episode tidak ditemukan'], 404);
 
         $validated = $request->validate([
@@ -63,10 +63,10 @@ class EpisodeController extends Controller
 
     public function destroy($id)
     {
-        $episode = Episode::find($id);
-        if (!$episode) return response()->json(['message' => 'Episode tidak ditemukan'], 404);
+        if (!Episode::destroy($id)) {
+            return response()->json(['message' => 'Episode tidak ditemukan'], 404);
+        }
 
-        $episode->delete();
         return response()->json(['message' => 'Episode berhasil dihapus'], 200);
     }
 }

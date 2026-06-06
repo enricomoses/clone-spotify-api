@@ -38,7 +38,7 @@ class PlaylistCategoryController extends Controller
 
     public function update(Request $request, $id)
     {
-        $category = PlaylistCategory::find($id);
+        $category = PlaylistCategory::query()->find($id);
         if (!$category) return response()->json(['message' => 'Kategori tidak ditemukan'], 404);
 
         $validated = $request->validate([
@@ -53,10 +53,9 @@ class PlaylistCategoryController extends Controller
 
     public function destroy($id)
     {
-        $category = PlaylistCategory::find($id);
-        if (!$category) return response()->json(['message' => 'Kategori tidak ditemukan'], 404);
-
-        $category->delete();
+        if (!PlaylistCategory::destroy($id)) {
+            return response()->json(['message' => 'Kategori tidak ditemukan'], 404);
+        }
         return response()->json(['message' => 'Kategori berhasil dihapus'], 200);
     }
 }

@@ -31,7 +31,7 @@ class PodcastCategoryController extends Controller
 
     public function show($id)
     {
-        $category = PodcastCategory::with('podcasts')->where('id_podcast_category', $id)->first();
+        $category = PodcastCategory::query()->with('podcasts')->where('id_podcast_category', $id)->first();
         if (!$category) return response()->json(['message' => 'Kategori podcast tidak ditemukan'], 404);
 
         return response()->json(['message' => 'Detail kategori podcast', 'data' => $category], 200);
@@ -39,7 +39,7 @@ class PodcastCategoryController extends Controller
 
     public function update(Request $request, $id)
     {
-        $category = PodcastCategory::where('id_podcast_category', $id)->first();
+        $category = PodcastCategory::query()->where('id_podcast_category', $id)->first();
         if (!$category) return response()->json(['message' => 'Kategori podcast tidak ditemukan'], 404);
 
         $validated = $request->validate([
@@ -54,10 +54,9 @@ class PodcastCategoryController extends Controller
 
     public function destroy($id)
     {
-        $category = PodcastCategory::where('id_podcast_category', $id)->first();
-        if (!$category) return response()->json(['message' => 'Kategori podcast tidak ditemukan'], 404);
-
-        $category->delete();
+        if (!PodcastCategory::query()->where('id_podcast_category', $id)->delete()) {
+            return response()->json(['message' => 'Kategori podcast tidak ditemukan'], 404);
+        }
         return response()->json(['message' => 'Kategori podcast berhasil dihapus'], 200);
     }
 }

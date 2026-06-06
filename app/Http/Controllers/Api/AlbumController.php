@@ -37,7 +37,7 @@ class AlbumController extends Controller
 
     public function update(Request $request, $id)
     {
-        $album = Album::find($id);
+        $album = Album::query()->find($id);
         if (!$album) return response()->json(['message' => 'Album tidak ditemukan'], 404);
 
         $validated = $request->validate([
@@ -52,10 +52,9 @@ class AlbumController extends Controller
 
     public function destroy($id)
     {
-        $album = Album::find($id);
-        if (!$album) return response()->json(['message' => 'Album tidak ditemukan'], 404);
-
-        $album->delete();
+        if (!Album::destroy($id)) {
+            return response()->json(['message' => 'Album tidak ditemukan'], 404);
+        }
         return response()->json(['message' => 'Album berhasil dihapus'], 200);
     }
 }

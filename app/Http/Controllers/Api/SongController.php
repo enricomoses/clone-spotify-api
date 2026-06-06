@@ -33,7 +33,7 @@ class SongController extends Controller
 
     public function show($id)
     {
-        $song = Song::with('album')->find($id);
+        $song = Song::query()->with('album')->find($id);
         if (!$song) return response()->json(['message' => 'Lagu tidak ditemukan'], 404);
 
         return response()->json(['message' => 'Detail lagu', 'data' => $song], 200);
@@ -41,7 +41,7 @@ class SongController extends Controller
 
     public function update(Request $request, $id)
     {
-        $song = Song::find($id);
+        $song = Song::query()->find($id);
         if (!$song) return response()->json(['message' => 'Lagu tidak ditemukan'], 404);
 
         $validated = $request->validate([
@@ -57,10 +57,14 @@ class SongController extends Controller
 
     public function destroy($id)
     {
-        $song = Song::find($id);
-        if (!$song) return response()->json(['message' => 'Lagu tidak ditemukan'], 404);
+        // Langsung coba hapus berdasarkan ID
+        $deleted = Song::destroy($id);
 
-        $song->delete();
+        // Jika return-nya 0 (berarti lagu tidak ada)
+        if (!$deleted) {
+            return response()->json(['message' => 'Lagu tidak ditemukan'], 404);
+        }
+
         return response()->json(['message' => 'Lagu berhasil dihapus'], 200);
     }
 
@@ -68,7 +72,7 @@ class SongController extends Controller
     {
         // Mengambil lagu beserta jumlah riwayat putarannya (Agregasi COUNT)
         // lalu diurutkan dari yang terbanyak, dibatasi 50 lagu.
-        $topSongs = Song::with('album')
+        $topSongs = Song::query()->with('album')
             ->withCount('streamingHistories')
             ->orderBy('streaming_histories_count', 'desc')
             ->take(50)

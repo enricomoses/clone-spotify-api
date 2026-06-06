@@ -41,7 +41,7 @@ class SongStreamingHistoryController extends Controller
 
     public function update(Request $request, $id)
     {
-        $stream = SongStreamingHistory::find($id);
+        $stream = SongStreamingHistory::query()->find($id);
         if (!$stream) return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
 
         $validated = $request->validate([
@@ -57,10 +57,9 @@ class SongStreamingHistoryController extends Controller
 
     public function destroy($id)
     {
-        $stream = SongStreamingHistory::find($id);
-        if (!$stream) return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
-
-        $stream->delete();
+        if (!SongStreamingHistory::destroy($id)) {
+            return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+        }
         return response()->json(['message' => 'Transaksi berhasil dihapus'], 200);
     }
 }

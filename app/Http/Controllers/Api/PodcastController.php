@@ -40,7 +40,7 @@ class PodcastController extends Controller
 
     public function update(Request $request, $id)
     {
-        $podcast = Podcast::find($id);
+        $podcast = Podcast::query()->find($id);
         if (!$podcast) return response()->json(['message' => 'Podcast tidak ditemukan'], 404);
 
         $validated = $request->validate([
@@ -57,10 +57,9 @@ class PodcastController extends Controller
 
     public function destroy($id)
     {
-        $podcast = Podcast::find($id);
-        if (!$podcast) return response()->json(['message' => 'Podcast tidak ditemukan'], 404);
-
-        $podcast->delete();
+        if (!Podcast::destroy($id)) {
+            return response()->json(['message' => 'Podcast tidak ditemukan'], 404);
+        }
         return response()->json(['message' => 'Podcast berhasil dihapus'], 200);
     }
 }
