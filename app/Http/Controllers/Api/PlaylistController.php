@@ -11,14 +11,18 @@ class PlaylistController extends Controller
 {
     public function index()
     {
-        $playlists = Playlist::with('category')->get();
+        // PERBAIKAN: Menambahkan relasi 'collaborators' agar frontend bisa membaca pembuat playlist
+        $playlists = Playlist::with(['category', 'collaborators'])->get();
         return response()->json(['message' => 'Data playlist', 'data' => $playlists], 200);
     }
 
     public function show($id)
     {
-        // Menarik data playlist yang sangat kaya (relasi ke lagu dan kolaborator)
-        $playlist = Playlist::with(['songs', 'collaborators', 'category'])->find($id);
+        // PERBAIKAN: Menggunakan query()->where() agar lebih konsisten
+        $playlist = Playlist::with(['songs', 'collaborators', 'category'])
+            ->where('id_playlist', $id)
+            ->first();
+
         if (!$playlist) return response()->json(['message' => 'Playlist tidak ditemukan'], 404);
 
         return response()->json(['message' => 'Detail playlist', 'data' => $playlist], 200);
@@ -27,15 +31,32 @@ class PlaylistController extends Controller
     // --- CRUD BASIC ---
     public function store(Request $request)
     {
+        // PERBAIKAN: Menambahkan validasi id_user untuk menangkap siapa yang membuat playlist
         $validated = $request->validate([
             'name' => 'required|string|max:150',
             'description' => 'nullable|string',
             'cover_image' => 'nullable|string',
-            'id_playlist_category' => 'nullable|string|exists:playlistcategory,id_playlist_category'
+            'id_playlist_category' => 'nullable|string|exists:playlistcategory,id_playlist_category',
+            'id_user' => 'required|string|exists:User,id_user'
         ]);
 
-        $validated['id_playlist'] = Str::uuid()->toString();
-        $playlist = Playlist::create($validated);
+        // Ekstrak data khusus untuk tabel playlist
+        $playlistData = [
+            'id_playlist' => Str::uuid()->toString(),
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'cover_image' => $validated['cover_image'] ?? null,
+            'id_playlist_category' => $validated['id_playlist_category'] ?? null,
+        ];
+
+        // 1. Simpan ke tabel playlist
+        $playlist = Playlist::create($playlistData);
+
+        // 2. Simpan relasinya ke tabel playlist_collaborator dengan role 'Owner'
+        $playlist->collaborators()->attach($validated['id_user'], ['role' => 'Owner']);
+
+        // 3. Load relasi agar data yang dikembalikan ke frontend sudah langsung lengkap
+        $playlist->load('collaborators');
 
         return response()->json(['message' => 'Playlist berhasil dibuat', 'data' => $playlist], 201);
     }
@@ -56,13 +77,13 @@ class PlaylistController extends Controller
         return response()->json(['message' => 'Playlist berhasil diupdate', 'data' => $playlist], 200);
     }
 
-   public function destroy($id)
-{
-    if (!Playlist::query()->where('id_playlist', $id)->delete()) {
-        return response()->json(['message' => 'Playlist tidak ditemukan'], 404);
+    public function destroy($id)
+    {
+        if (!Playlist::query()->where('id_playlist', $id)->delete()) {
+            return response()->json(['message' => 'Playlist tidak ditemukan'], 404);
+        }
+        return response()->json(['message' => 'Playlist berhasil dihapus'], 200);
     }
-    return response()->json(['message' => 'Playlist berhasil dihapus'], 200);
-}
 
     // --- MANAJEMEN ISI PLAYLIST ---
     public function addSong(Request $request, $id)
@@ -91,7 +112,6 @@ class PlaylistController extends Controller
             'role' => 'required|string'
         ]);
 
-        // Contoh payload: { "user_id": "U_02", "role": "Editor" } untuk mengundang Rex Clement
         $playlist->collaborators()->syncWithoutDetaching([
             $request->user_id => ['role' => $request->role]
         ]);
