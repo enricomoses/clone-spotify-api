@@ -8,32 +8,62 @@ use Illuminate\Http\Request;
 
 class SocialController extends Controller
 {
-    // Fitur Like/Unlike Lagu
-    public function toggleLikeSong(Request $request)
+    // --- FITUR LIKE LAGU ---
+    public function likeSong(Request $request, $id)
     {
-        $request->validate([
-            'id_user' => 'required|exists:User,id_user',
-            'id_song' => 'required|exists:song,id_song'
-        ]);
-
-        $user = User::find($request->id_user);
-        // Toggle akan menambah data ke tabel user_likedsong jika belum ada, atau menghapus jika sudah ada
-        $user->likedSongs()->toggle($request->id_song);
-
-        return response()->json(['message' => 'Status like lagu berhasil diubah'], 200);
+        $user = User::where('id_user', $id)->first();
+        $user->likedSongs()->syncWithoutDetaching([$request->song_id]);
+        return response()->json(['message' => 'Berhasil menyukai lagu'], 200);
     }
 
-    // Fitur Follow/Unfollow User Lain (Mutual)
-    public function toggleFollowUser(Request $request)
+    public function unlikeSong($id, $song_id)
     {
-        $request->validate([
-            'follower_id' => 'required|exists:User,id_user',
-            'followed_id' => 'required|exists:User,id_user'
-        ]);
+        $user = User::where('id_user', $id)->first();
+        $user->likedSongs()->detach($song_id);
+        return response()->json(['message' => 'Batal menyukai lagu'], 200);
+    }
 
-        $user = User::find($request->follower_id);
-        $user->following()->toggle($request->followed_id);
+    // --- FITUR FOLLOW USER ---
+    public function followUser(Request $request, $id)
+    {
+        $user = User::where('id_user', $id)->first();
+        $user->following()->syncWithoutDetaching([$request->target_id]);
+        return response()->json(['message' => 'Berhasil mem-follow user'], 200);
+    }
 
-        return response()->json(['message' => 'Status follow user berhasil diubah'], 200);
+    public function unfollowUser($id, $target_id)
+    {
+        $user = User::where('id_user', $id)->first();
+        $user->following()->detach($target_id);
+        return response()->json(['message' => 'Berhasil unfollow user'], 200);
+    }
+
+    // --- FITUR FOLLOW ARTIST, PLAYLIST, PODCAST ---
+    public function followArtist(Request $request, $id)
+    {
+        $user = User::where('id_user', $id)->first();
+        $user->followedArtists()->syncWithoutDetaching([$request->artist_id]);
+        return response()->json(['message' => 'Berhasil mem-follow artis'], 200);
+    }
+
+    public function unfollowArtist($id, $artist_id)
+    {
+        $user = User::where('id_user', $id)->first();
+        $user->followedArtists()->detach($artist_id);
+        return response()->json(['message' => 'Berhasil unfollow artis'], 200);
+    }
+
+    public function followPlaylist(Request $request, $id)
+    {
+        $user = User::where('id_user', $id)->first();
+        $user->followedPlaylists()->syncWithoutDetaching([$request->playlist_id]);
+        return response()->json(['message' => 'Berhasil mengikuti playlist'], 200);
+    }
+
+    public function followPodcast(Request $request, $id)
+    {
+        $user = User::where('id_user', $id)->first();
+        $user->followedPodcasts()->syncWithoutDetaching([$request->podcast_id]);
+        return response()->json(['message' => 'Berhasil mengikuti podcast'], 200);
     }
 }
