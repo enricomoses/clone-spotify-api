@@ -63,6 +63,12 @@ Route::delete('/users/{id}/unfollow-artist/{artist_id}', [SocialController::clas
 Route::post('/users/{id}/follow-playlist', [SocialController::class, 'followPlaylist']);
 Route::post('/users/{id}/follow-podcast', [SocialController::class, 'followPodcast']);
 
+// --- CONCERT CUSTOM ROUTES ---
+Route::post('/concerts/{id}/artists', [ConcertController::class, 'addArtist']);
+Route::delete('/concerts/{id}/artists/{artist_id}', [ConcertController::class, 'removeArtist']);
+
+Route::post('/artists/{id}/concerts', [ArtistController::class, 'addConcertToArtist']);
+Route::delete('/artists/{id}/concerts/{concert_id}', [ArtistController::class, 'removeConcertFromArtist']);
 
 // ==========================================
 // 3. RESOURCE ROUTES (CRUD Standar)

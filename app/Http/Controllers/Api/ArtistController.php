@@ -11,17 +11,41 @@ class ArtistController extends Controller
 {
     public function index()
     {
-        $artists = Artist::all();
+        // Menampilkan data artis lengkap dengan album yang dimilikinya
+        $artists = Artist::with('albums')->get();
         return response()->json(['message' => 'Data artist', 'data' => $artists], 200);
     }
 
     public function show($id)
     {
-        // Menampilkan artis beserta album dan lagu-lagunya (Nested Eager Loading)
-        $artist = Artist::with(['albums', 'songs'])->find($id);
+        // Perbaikan Intelephense: Menggunakan where()->first()
+        $artist = Artist::with(['albums', 'songs', 'concerts', 'galleries'])
+            ->where('id_artist', $id)
+            ->first();
+
         if (!$artist) return response()->json(['message' => 'Artist tidak ditemukan'], 404);
 
         return response()->json(['message' => 'Detail artist', 'data' => $artist], 200);
+    }
+
+    // --- MANAJEMEN RELASI DARI SISI ARTIS ---
+
+    public function addAlbumToArtist(Request $request, $id)
+    {
+        $artist = Artist::query()->where('id_artist', $id)->first();
+        $request->validate(['album_id' => 'required|exists:album,id_album']);
+
+        $artist->albums()->syncWithoutDetaching([$request->album_id]);
+        return response()->json(['message' => 'Album berhasil ditambahkan ke profil artis'], 200);
+    }
+
+    public function addSongToArtist(Request $request, $id)
+    {
+        $artist = Artist::query()->where('id_artist', $id)->first();
+        $request->validate(['song_id' => 'required|exists:song,id_song']);
+
+        $artist->songs()->syncWithoutDetaching([$request->song_id]);
+        return response()->json(['message' => 'Lagu berhasil ditambahkan ke profil artis'], 200);
     }
 
     // --- FITUR KONSER ---
@@ -63,11 +87,30 @@ class ArtistController extends Controller
             ->where('id_artist', $id)
             ->delete();
 
-        // Tambahan validasi jika foto sudah tidak ada di database
         if (!$deleted) {
             return response()->json(['message' => 'Foto galeri tidak ditemukan'], 404);
         }
 
         return response()->json(['message' => 'Foto galeri dihapus'], 200);
+    }
+
+    public function addConcertToArtist(Request $request, $id)
+    {
+        $artist = Artist::query()->where('id_artist', $id)->first();
+        if (!$artist) return response()->json(['message' => 'Artist tidak ditemukan'], 404);
+
+        $request->validate(['concert_id' => 'required|exists:concert,id_concert']);
+
+        $artist->concerts()->syncWithoutDetaching([$request->concert_id]);
+        return response()->json(['message' => 'Konser berhasil ditambahkan ke profil artis'], 200);
+    }
+
+    public function removeConcertFromArtist($id, $concert_id)
+    {
+        $artist = Artist::query()->where('id_artist', $id)->first();
+        if (!$artist) return response()->json(['message' => 'Artist tidak ditemukan'], 404);
+
+        $artist->concerts()->detach($concert_id);
+        return response()->json(['message' => 'Konser dihapus dari profil artis'], 200);
     }
 }
