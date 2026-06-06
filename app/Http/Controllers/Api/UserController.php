@@ -5,29 +5,34 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str; // PENTING: Tambahkan baris ini untuk menggunakan helper UUID
 
 class UserController extends Controller
 {
     public function index()
     {
-        // Menarik data user, tapi password tetap disembunyikan (berkat settingan Model)
         $users = User::all();
         return response()->json(['message' => 'Data user', 'data' => $users], 200);
     }
 
     public function store(Request $request)
     {
+        // 1. Validasi input dari frontend
         $validated = $request->validate([
-            'id_user' => 'required|string|unique:User,id_user',
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:User,email',
             'password' => 'required|string|min:6',
-            'birthday' => 'nullable|date|before:today', // Constraint: Tidak boleh lahir besok
+            'birthday' => 'nullable|date|before:today',
             'gender' => 'nullable|string',
             'country' => 'nullable|string'
         ]);
 
+        // 2. Generate UUID v4 secara otomatis
+        $validated['id_user'] = Str::uuid()->toString();
+
+        // 3. Simpan ke database
         $user = User::create($validated);
+
         return response()->json(['message' => 'User berhasil dibuat', 'data' => $user], 201);
     }
 
