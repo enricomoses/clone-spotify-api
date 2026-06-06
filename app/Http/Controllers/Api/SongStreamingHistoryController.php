@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\SongStreamingHistory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class SongStreamingHistoryController extends Controller
 {
@@ -17,16 +18,16 @@ class SongStreamingHistoryController extends Controller
 
     public function store(Request $request)
     {
-        // CONSTRAINT / VALIDASI ATURAN BISNIS TRANSAKSI
         $validated = $request->validate([
-            'id_stream' => 'required|string|unique:song_streaminghistory,id_stream',
-            'played_at' => 'required|date|before_or_equal:now', // Constraint: Waktu putar tidak boleh di masa depan
+            'played_at' => 'required|date|before_or_equal:now',
             'play_duration' => 'nullable|integer|min:1',
-            'id_user' => 'required|string|exists:User,id_user', // Constraint FK: User harus ada
-            'id_song' => 'required|string|exists:song,id_song'  // Constraint FK: Lagu harus ada
+            'id_user' => 'required|string|exists:User,id_user',
+            'id_song' => 'required|string|exists:song,id_song'
         ]);
 
+        $validated['id_stream'] = Str::uuid()->toString();
         $stream = SongStreamingHistory::create($validated);
+
         return response()->json(['message' => 'Transaksi streaming berhasil dicatat', 'data' => $stream], 201);
     }
 

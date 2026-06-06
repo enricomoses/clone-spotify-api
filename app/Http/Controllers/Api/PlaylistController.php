@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Playlist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PlaylistController extends Controller
 {
@@ -27,14 +28,15 @@ class PlaylistController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_playlist' => 'required|string|unique:playlist,id_playlist',
             'name' => 'required|string|max:150',
             'description' => 'nullable|string',
             'cover_image' => 'nullable|string',
             'id_playlist_category' => 'nullable|string|exists:playlistcategory,id_playlist_category'
         ]);
 
+        $validated['id_playlist'] = Str::uuid()->toString();
         $playlist = Playlist::create($validated);
+
         return response()->json(['message' => 'Playlist berhasil dibuat', 'data' => $playlist], 201);
     }
 

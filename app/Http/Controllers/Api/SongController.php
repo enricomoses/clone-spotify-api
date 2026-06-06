@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Song;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class SongController extends Controller
 {
@@ -17,16 +18,16 @@ class SongController extends Controller
 
     public function store(Request $request)
     {
-        // CONSTRAINT / VALIDASI ATURAN BISNIS
         $validated = $request->validate([
-            'id_song' => 'required|string|unique:song,id_song', // ID tidak boleh kembar
             'title' => 'required|string|max:150',
-            'duration' => 'required|integer|min:1', // Constraint: Durasi harus angka positif (> 0)
-            'id_album' => 'nullable|string|exists:album,id_album', // Constraint FK: Album harus terdaftar
-            'audio_url' => 'required|string',
+            'duration' => 'required|integer|min:1',
+            'id_album' => 'nullable|string|exists:album,id_album',
+            'audio_url' => 'required|string'
         ]);
 
+        $validated['id_song'] = Str::uuid()->toString();
         $song = Song::create($validated);
+
         return response()->json(['message' => 'Lagu berhasil ditambahkan', 'data' => $song], 201);
     }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Concert;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ConcertController extends Controller
 {
@@ -17,14 +18,15 @@ class ConcertController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_concert' => 'required|string|unique:concert,id_concert',
             'location' => 'required|string',
             'location_url' => 'nullable|url',
             'event_at' => 'required|date',
             'ticket_url' => 'required|url'
         ]);
 
+        $validated['id_concert'] = Str::uuid()->toString();
         $concert = Concert::create($validated);
+
         return response()->json(['message' => 'Konser berhasil ditambahkan', 'data' => $concert], 201);
     }
 

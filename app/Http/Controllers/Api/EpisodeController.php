@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Episode;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class EpisodeController extends Controller
 {
@@ -17,18 +18,19 @@ class EpisodeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_episode' => 'required|string|unique:episode,id_episode',
             'title' => 'required|string|max:150',
             'description' => 'nullable|string',
             'published_at' => 'required|date|before_or_equal:now',
-            'duration' => 'required|integer|min:1', // Constraint: Durasi > 0
+            'duration' => 'required|integer|min:1',
             'audio_url' => 'required|string',
             'video_url' => 'nullable|string',
             'thumbnail_image' => 'nullable|string',
             'id_podcast' => 'required|string|exists:podcast,id_podcast'
         ]);
 
+        $validated['id_episode'] = Str::uuid()->toString();
         $episode = Episode::create($validated);
+
         return response()->json(['message' => 'Episode berhasil ditambahkan', 'data' => $episode], 201);
     }
 

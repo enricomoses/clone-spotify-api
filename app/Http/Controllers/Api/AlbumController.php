@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Album;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class AlbumController extends Controller
 {
@@ -17,16 +18,16 @@ class AlbumController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_album' => 'required|string|unique:album,id_album',
             'title' => 'required|string|max:150',
             'release' => 'required|date',
             'cover_image' => 'nullable|string'
         ]);
 
+        $validated['id_album'] = Str::uuid()->toString();
         $album = Album::create($validated);
+
         return response()->json(['message' => 'Album berhasil ditambahkan', 'data' => $album], 201);
     }
-
     public function show($id)
     {
         $album = Album::with('artists', 'songs')->find($id);

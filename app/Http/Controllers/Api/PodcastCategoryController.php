@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\PodcastCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PodcastCategoryController extends Controller
 {
@@ -17,13 +18,14 @@ class PodcastCategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_podcast_category' => 'required|string|unique:podcastcategory,id_podcast_category',
             'name' => 'required|string|max:100',
             'cover_image' => 'nullable|string',
             'icon' => 'nullable|string'
         ]);
 
+        $validated['id_podcast_category'] = Str::uuid()->toString();
         $category = PodcastCategory::create($validated);
+
         return response()->json(['message' => 'Kategori podcast berhasil ditambahkan', 'data' => $category], 201);
     }
 

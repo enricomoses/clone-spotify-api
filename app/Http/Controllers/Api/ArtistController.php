@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Artist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ArtistController extends Controller
 {
@@ -42,15 +43,16 @@ class ArtistController extends Controller
     public function addGallery(Request $request, $id)
     {
         $validated = $request->validate([
-            'id_gallery' => 'required|string|unique:artist_gallery,id_gallery',
             'image_url' => 'required|string',
             'description_pict' => 'nullable|string'
         ]);
 
+        $validated['id_gallery'] = Str::uuid()->toString();
         $validated['id_artist'] = $id;
         $validated['uploaded_at'] = now();
 
         $gallery = \App\Models\ArtistGallery::create($validated);
+
         return response()->json(['message' => 'Foto galeri ditambahkan', 'data' => $gallery], 201);
     }
 

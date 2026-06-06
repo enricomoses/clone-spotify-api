@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Podcast;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PodcastController extends Controller
 {
@@ -17,15 +18,16 @@ class PodcastController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_podcast' => 'required|string|unique:podcast,id_podcast',
             'name' => 'required|string|max:150',
             'about' => 'nullable|string',
             'cover_image' => 'nullable|string',
             'id_podcast_category' => 'nullable|string|exists:podcastcategory,id_podcast_category',
-            'id_user' => 'required|string|exists:User,id_user' // Constraint: Pembuat (creator) harus ada
+            'id_user' => 'required|string|exists:User,id_user'
         ]);
 
+        $validated['id_podcast'] = Str::uuid()->toString();
         $podcast = Podcast::create($validated);
+
         return response()->json(['message' => 'Podcast berhasil dibuat', 'data' => $podcast], 201);
     }
 
