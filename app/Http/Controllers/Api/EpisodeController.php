@@ -81,27 +81,4 @@ class EpisodeController extends Controller
 
         return response()->json(['message' => 'Episode berhasil dihapus'], 200);
     }
-
-    // --- FITUR MENCATAT STREAMING HISTORY (ENDPOINT TAMBAHAN) ---
-    public function recordStream(Request $request, $id)
-    {
-        $episode = Episode::query()->where('id_episode', $id)->first();
-        if (!$episode) return response()->json(['message' => 'Episode tidak ditemukan'], 404);
-
-        $request->validate([
-            'id_user' => 'required|exists:User,id_user',
-            'play_duration' => 'nullable|integer|min:1' // Durasi seberapa lama user mendengarkan
-        ]);
-
-        // Catat sebagai transaksi baru di tabel history
-        DB::table('episode_streaminghistory')->insert([
-            'id_stream' => Str::uuid()->toString(),
-            'id_user' => $request->id_user,
-            'id_episode' => $id,
-            'play_duration' => $request->play_duration ?? null,
-            'played_at' => now(), // Waktu diputar otomatis mengambil waktu server saat ini
-        ]);
-
-        return response()->json(['message' => 'Riwayat streaming episode berhasil dicatat'], 201);
-    }
 }
