@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\PodcastController;
 use App\Http\Controllers\Api\PodcastCategoryController;
 use App\Http\Controllers\Api\EpisodeController;
 use App\Http\Controllers\Api\ConcertController;
+use App\Http\Controllers\Api\EpisodeStreamingHistoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,18 +51,29 @@ Route::get('/artists/{id}/gallery', [ArtistController::class, 'getGallery']);
 Route::post('/artists/{id}/gallery', [ArtistController::class, 'addGallery']);
 Route::delete('/artists/{id}/gallery/{gallery_id}', [ArtistController::class, 'removeGallery']);
 
-// Fitur Sosial User (Like, Follow)
+// ==========================================
+// FITUR SOSIAL USER (Like, Follow, Unfollow)
+// ==========================================
+
+// 1. Lagu
 Route::post('/users/{id}/like-song', [SocialController::class, 'likeSong']);
 Route::delete('/users/{id}/unlike-song/{song_id}', [SocialController::class, 'unlikeSong']);
 
+// 2. User
 Route::post('/users/{id}/follow-user', [SocialController::class, 'followUser']);
 Route::delete('/users/{id}/unfollow-user/{target_id}', [SocialController::class, 'unfollowUser']);
 
+// 3. Artis
 Route::post('/users/{id}/follow-artist', [SocialController::class, 'followArtist']);
 Route::delete('/users/{id}/unfollow-artist/{artist_id}', [SocialController::class, 'unfollowArtist']);
 
+// 4. Playlist
 Route::post('/users/{id}/follow-playlist', [SocialController::class, 'followPlaylist']);
+Route::delete('/users/{id}/unfollow-playlist/{playlist_id}', [SocialController::class, 'unfollowPlaylist']);
+
+// 5. Podcast
 Route::post('/users/{id}/follow-podcast', [SocialController::class, 'followPodcast']);
+Route::delete('/users/{id}/unfollow-podcast/{podcast_id}', [SocialController::class, 'unfollowPodcast']);
 
 // --- CONCERT CUSTOM ROUTES ---
 Route::post('/concerts/{id}/artists', [ConcertController::class, 'addArtist']);
@@ -88,3 +100,5 @@ Route::apiResource('episodes', EpisodeController::class);
 Route::apiResource('concerts', ConcertController::class);
 Route::apiResource('streaming-history', SongStreamingHistoryController::class);
 Route::apiResource('podcast-categories', PodcastCategoryController::class);
+Route::apiResource('song-streaming', SongStreamingHistoryController::class);
+Route::apiResource('episode-streaming', EpisodeStreamingHistoryController::class);
