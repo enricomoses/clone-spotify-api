@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Sanctum\HasApiTokens;
 
 class Artist extends Model
 {
-    use HasFactory;
+    use HasApiTokens, HasFactory;
 
     // Konfigurasi tabel sesuai pgAdmin
     protected $table = 'artist';
@@ -31,9 +32,9 @@ class Artist extends Model
     ];
 
     // Menyembunyikan password dari response JSON API
-    // protected $hidden = [
-    //     'password',
-    // ];
+    protected $hidden = [
+        'password',
+    ];
 
     // Hashing password secara otomatis
     protected function casts(): array

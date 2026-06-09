@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\EpisodeStreamingHistoryController;
 // 1. AUTHENTICATION
 // ==========================================
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login/artist', [AuthController::class, 'loginArtist']);
 
 
 // ==========================================
