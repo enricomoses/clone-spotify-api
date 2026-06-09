@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\PodcastCategoryController;
 use App\Http\Controllers\Api\EpisodeController;
 use App\Http\Controllers\Api\ConcertController;
 use App\Http\Controllers\Api\EpisodeStreamingHistoryController;
+use App\Http\Controllers\Api\MediaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -85,6 +86,12 @@ Route::delete('/artists/{id}/concerts/{concert_id}', [ArtistController::class, '
 
 // --- EPISODE CUSTOM ROUTES ---
 Route::post('/episodes/{id}/stream', [EpisodeController::class, 'recordStream']);
+
+// ==========================================
+// MEDIA STORAGE (CLOUDINARY)
+// ==========================================
+Route::post('/media/upload', [MediaController::class, 'uploadImage']);
+Route::delete('/media/delete', [MediaController::class, 'deleteImage']);
 
 // ==========================================
 // 3. RESOURCE ROUTES (CRUD Standar)

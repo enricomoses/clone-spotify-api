@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Cloudinary\Cloudinary;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -12,7 +13,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(Cloudinary::class, function ($app) {
+            return new Cloudinary(env('CLOUDINARY_URL'));
+        });
     }
 
     /**
