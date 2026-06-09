@@ -28,6 +28,32 @@ class ArtistController extends Controller
         return response()->json(['message' => 'Detail artist', 'data' => $artist], 200);
     }
 
+    public function update(Request $request, $id)
+    {
+        $artist = Artist::query()->where('id_artist', $id)->first();
+        if (!$artist) {
+            return response()->json(['message' => 'Artist tidak ditemukan'], 404);
+        }
+
+        // Validasi disesuaikan dengan struktur ERD Anda
+        // Menggunakan unique dengan pengecualian ID agar email yang sama tidak error saat update profil sendiri
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:150',
+            'email' => 'sometimes|required|email|unique:artist,email,' . $id . ',id_artist',
+            'password' => 'sometimes|required|string', // Ingat: tidak di-hash sesuai business rule Anda
+            'instagram' => 'nullable|string',
+            'facebook' => 'nullable|string',
+            'wikipedia' => 'nullable|string',
+            'x' => 'nullable|string',
+            'bio' => 'nullable|string',
+            'profile_picture' => 'nullable|string'
+        ]);
+
+        $artist->update($validated);
+
+        return response()->json(['message' => 'Data artist berhasil diupdate', 'data' => $artist], 200);
+    }
+
     // --- MANAJEMEN RELASI DARI SISI ARTIS ---
 
     public function addAlbumToArtist(Request $request, $id)
