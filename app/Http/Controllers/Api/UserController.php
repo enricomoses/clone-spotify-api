@@ -38,14 +38,8 @@ class UserController extends Controller
 
     public function show($id)
     {
-        $user = User::with([
-            'followedPlaylists',
-            'following',
-            'followedArtists',
-            'followedPodcasts',
-            'likedSongs'
-        ])->where('id_user', $id)->first();
-
+        // Menampilkan detail user beserta playlist yang dia ikuti dan teman yang dia follow
+        $user = User::with(['followedPlaylists', 'following'])->find($id);
         if (!$user) return response()->json(['message' => 'User tidak ditemukan'], 404);
 
         return response()->json(['message' => 'Detail user', 'data' => $user], 200);

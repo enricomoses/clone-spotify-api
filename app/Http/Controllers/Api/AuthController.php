@@ -17,18 +17,13 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        $user = User::with([
-            'followedPlaylists',
-            'following',
-            'followedArtists',
-            'followedPodcasts',
-            'likedSongs'
-        ])->where('email', $request->email)->first();
+        $user = User::query()->where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Kredensial tidak valid'], 401);
         }
 
+        // Membuat Token Sanctum
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
