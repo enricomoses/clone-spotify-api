@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str; // PENTING: Tambahkan baris ini untuk menggunakan helper UUID
 
 class UserController extends Controller
@@ -81,8 +82,30 @@ class UserController extends Controller
             return response()->json(['message' => 'User tidak ditemukan'], 404);
         }
 
-        // Menghapus data transaksi/relasi terlebih dahulu jika diperlukan cascade manual,
-        // namun jika di PostgreSQL sudah diset ON DELETE CASCADE pada Foreign Key, ini bisa langsung dihapus.
+        // 1. Hapus riwayat streaming
+        DB::table('song_streaminghistory')->where('id_user', $id)->delete();
+        DB::table('episode_streaminghistory')->where('id_user', $id)->delete();
+
+        // 2. Hapus data sosial (Like & Follow)
+        DB::table('user_likedsong')->where('id_user', $id)->delete();
+        DB::table('user_followartist')->where('id_user', $id)->delete();
+        DB::table('user_followplaylist')->where('id_user', $id)->delete();
+        DB::table('user_followpodcast')->where('id_user', $id)->delete();
+
+        // 3. Hapus relasi follow antar user (baik sebagai follower maupun followed)
+        DB::table('user_followuser')->where('follower_id', $id)->orWhere('followed_id', $id)->delete();
+
+        // 4. Hapus dari daftar kolaborator playlist
+        DB::table('playlist_collaborator')->where('id_user', $id)->delete();
+
+        // 5. Tangani Podcast buatan user ini (Opsional: hapus podcast-nya, atau biarkan tapi set id_user menjadi null jika diizinkan database)
+        // Karena di ERD podcast dibuat oleh user, amannya kita hapus podcast-nya menggunakan logika dari PodcastController
+        $podcasts = DB::table('podcast')->where('id_user', $id)->pluck('id_podcast');
+        foreach ($podcasts as $podcastId) {
+            // Panggil logika hapus podcast agar episode dan history-nya ikut terhapus
+            app(\App\Http\Controllers\Api\PodcastController::class)->destroy($podcastId);
+        }
+        
         $user->delete();
         return response()->json(['message' => 'User berhasil dihapus'], 200);
     }

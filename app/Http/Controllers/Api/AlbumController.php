@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Album;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class AlbumController extends Controller
@@ -88,6 +89,8 @@ class AlbumController extends Controller
 
         // PERBAIKAN: Putus relasi di tabel pivot artist_album terlebih dahulu agar tidak menyisakan data sampah
         $album->artists()->detach();
+
+        DB::table('song')->where('id_album', $id)->update(['id_album' => null]);
 
         // Hapus data album utama
         $album->delete();

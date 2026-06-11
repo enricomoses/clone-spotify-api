@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\PlaylistCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PlaylistCategoryController extends Controller
@@ -53,9 +54,24 @@ class PlaylistCategoryController extends Controller
 
     public function destroy($id)
     {
-        if (!PlaylistCategory::destroy($id)) {
+        $category = PlaylistCategory::query()->where('id_playlist_category', $id)->first();
+
+        if (!$category) {
             return response()->json(['message' => 'Kategori tidak ditemukan'], 404);
         }
-        return response()->json(['message' => 'Kategori berhasil dihapus'], 200);
+
+        // ==========================================
+        // PROSES PEMBERSIHAN RELASI
+        // ==========================================
+        // Ubah semua playlist yang memakai kategori ini menjadi 'Tanpa Kategori' (null)
+        // Mencegah error Foreign Key Constraint dan mencegah playlist ikut terhapus
+        DB::table('playlist')
+            ->where('id_playlist_category', $id)
+            ->update(['id_playlist_category' => null]);
+
+        // Setelah relasinya dibersihkan, hapus kategori utama dengan aman
+        $category->delete();
+
+        return response()->json(['message' => 'Kategori berhasil dihapus dan playlist terkait telah disesuaikan'], 200);
     }
 }
