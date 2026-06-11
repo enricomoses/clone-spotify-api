@@ -62,4 +62,18 @@ class EpisodeStreamingHistoryController extends Controller
         $stream->delete();
         return response()->json(['message' => 'Transaksi episode berhasil dihapus'], 200);
     }
+
+    // --- RIWAYAT STREAMING EPISODE PER USER ---
+    public function getUserHistory($userId)
+    {
+        $history = EpisodeStreamingHistory::with(['episode.podcast'])
+            ->where('id_user', $userId)
+            ->orderBy('played_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'message' => 'Riwayat streaming episode user',
+            'data' => $history
+        ], 200);
+    }
 }

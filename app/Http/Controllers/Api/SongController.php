@@ -26,7 +26,7 @@ class SongController extends Controller
             'audio_url' => 'required|string',
 
             // Wajib ada artis yang menyanyikan (array)
-            'artist_ids' => 'required|array',
+            'artist_ids' => 'required|array|min:1',
             'artist_ids.*' => 'exists:artist,id_artist',
 
             // Opsional: Jika lagu langsung dimasukkan ke playlist saat dibuat
@@ -116,12 +116,7 @@ class SongController extends Controller
         $song->artists()->detach();
 
         // 2. Putus relasi dengan playlist (tabel playlist_song)
-        // (Pastikan fungsi playlists() ada di model Song Anda)
-        if (method_exists($song, 'playlists')) {
-            $song->playlists()->detach();
-        } else {
-            DB::table('playlist_song')->where('id_song', $id)->delete();
-        }
+        $song->playlists()->detach();
 
         // 3. Putus relasi dengan user yang me-like (tabel user_likedsong)
         DB::table('user_likedsong')->where('id_song', $id)->delete();

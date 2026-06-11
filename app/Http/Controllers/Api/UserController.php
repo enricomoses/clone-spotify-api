@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Playlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str; // PENTING: Tambahkan baris ini untuk menggunakan helper UUID
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -39,12 +40,16 @@ class UserController extends Controller
 
     public function show($id)
     {
+        // PERBAIKAN: Load semua relasi penting termasuk followers, collaborativePlaylists, podcasts
         $user = User::with([
             'followedPlaylists',
             'following',
+            'followers',
             'followedArtists',
             'followedPodcasts',
-            'likedSongs'
+            'likedSongs.artists',
+            'collaborativePlaylists',
+            'podcasts'
         ])->where('id_user', $id)->first();
 
         if (!$user) return response()->json(['message' => 'User tidak ditemukan'], 404);
@@ -54,7 +59,8 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
-        $user = User::find($id);
+        // PERBAIKAN: Menggunakan where()->first() karena PK bukan 'id' default
+        $user = User::where('id_user', $id)->first();
         if (!$user) {
             return response()->json(['message' => 'User tidak ditemukan'], 404);
         }
@@ -77,10 +83,15 @@ class UserController extends Controller
 
     public function destroy($id)
     {
-        $user = User::find($id);
+        // PERBAIKAN: Menggunakan where()->first() karena PK bukan 'id' default
+        $user = User::where('id_user', $id)->first();
         if (!$user) {
             return response()->json(['message' => 'User tidak ditemukan'], 404);
         }
+
+        // ==========================================
+        // PROSES CASCADE DELETE (PEMBERSIHAN RELASI)
+        // ==========================================
 
         // 1. Hapus riwayat streaming
         DB::table('song_streaminghistory')->where('id_user', $id)->delete();
@@ -95,18 +106,47 @@ class UserController extends Controller
         // 3. Hapus relasi follow antar user (baik sebagai follower maupun followed)
         DB::table('user_followuser')->where('follower_id', $id)->orWhere('followed_id', $id)->delete();
 
-        // 4. Hapus dari daftar kolaborator playlist
+        // 4. Handle playlist yang dimiliki user ini
+        //    - Jika user adalah Owner → hapus playlist beserta relasinya
+        //    - Jika user adalah Editor → cukup hapus dari collaborator
+        $collaborations = DB::table('playlist_collaborator')->where('id_user', $id)->get();
+
+        foreach ($collaborations as $collab) {
+            if ($collab->role === 'Owner') {
+                // User ini adalah Owner playlist → hapus playlist beserta semua relasinya
+                $playlist = Playlist::where('id_playlist', $collab->id_playlist)->first();
+                if ($playlist) {
+                    $playlist->collaborators()->detach();
+                    $playlist->songs()->detach();
+                    DB::table('user_followplaylist')->where('id_playlist', $collab->id_playlist)->delete();
+                    $playlist->delete();
+                }
+            }
+        }
+
+        // Hapus sisa entri collaborator (untuk playlist dimana user hanya Editor)
         DB::table('playlist_collaborator')->where('id_user', $id)->delete();
 
-        // 5. Tangani Podcast buatan user ini (Opsional: hapus podcast-nya, atau biarkan tapi set id_user menjadi null jika diizinkan database)
-        // Karena di ERD podcast dibuat oleh user, amannya kita hapus podcast-nya menggunakan logika dari PodcastController
+        // 5. Handle Podcast buatan user ini
+        //    Karena di ERD podcast dibuat oleh user (mandatory FK), hapus podcast beserta relasinya
         $podcasts = DB::table('podcast')->where('id_user', $id)->pluck('id_podcast');
         foreach ($podcasts as $podcastId) {
-            // Panggil logika hapus podcast agar episode dan history-nya ikut terhapus
-            app(\App\Http\Controllers\Api\PodcastController::class)->destroy($podcastId);
+            // Hapus followers podcast
+            DB::table('user_followpodcast')->where('id_podcast', $podcastId)->delete();
+
+            // Hapus episode beserta streaming history-nya
+            $episodes = DB::table('episode')->where('id_podcast', $podcastId)->pluck('id_episode');
+            if ($episodes->isNotEmpty()) {
+                DB::table('episode_streaminghistory')->whereIn('id_episode', $episodes)->delete();
+                DB::table('episode')->where('id_podcast', $podcastId)->delete();
+            }
+
+            // Hapus podcast
+            DB::table('podcast')->where('id_podcast', $podcastId)->delete();
         }
-        
+
+        // 6. Hapus user utama
         $user->delete();
-        return response()->json(['message' => 'User berhasil dihapus'], 200);
+        return response()->json(['message' => 'User berhasil dihapus beserta seluruh datanya'], 200);
     }
 }

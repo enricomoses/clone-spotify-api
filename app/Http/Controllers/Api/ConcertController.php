@@ -116,6 +116,14 @@ class ConcertController extends Controller
         $concert = Concert::query()->where('id_concert', $id)->first();
         if (!$concert) return response()->json(['message' => 'Konser tidak ditemukan'], 404);
 
+        // Cek agar concert tidak menjadi 0 artist (minimal 1 artist)
+        $currentArtistCount = $concert->artists()->count();
+        if ($currentArtistCount <= 1) {
+            return response()->json([
+                'message' => 'Tidak bisa menghapus artis terakhir dari konser. Konser harus punya minimal 1 artist.'
+            ], 400);
+        }
+
         $concert->artists()->detach($artist_id);
         return response()->json(['message' => 'Artis dihapus dari konser'], 200);
     }

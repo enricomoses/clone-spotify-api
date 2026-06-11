@@ -103,4 +103,16 @@ class PodcastController extends Controller
 
         return response()->json(['message' => 'Podcast beserta episode dan followers berhasil dihapus'], 200);
     }
+
+    // --- ENDPOINT UNTUK MELIHAT EPISODE MILIK PODCAST ---
+    public function getEpisodes($id)
+    {
+        $podcast = Podcast::with('episodes')->where('id_podcast', $id)->first();
+        if (!$podcast) return response()->json(['message' => 'Podcast tidak ditemukan'], 404);
+
+        return response()->json([
+            'message' => 'Daftar episode podcast',
+            'data' => $podcast->episodes
+        ], 200);
+    }
 }

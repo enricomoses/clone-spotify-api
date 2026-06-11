@@ -12,7 +12,7 @@ class PlaylistCategoryController extends Controller
 {
     public function index()
     {
-        $categories = PlaylistCategory::all();
+        $categories = PlaylistCategory::with('playlists')->get();
         return response()->json(['message' => 'Data kategori playlist', 'data' => $categories], 200);
     }
 
@@ -20,8 +20,8 @@ class PlaylistCategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'cover_image' => 'nullable|string',
-            'icon' => 'nullable|string'
+            'cover_image' => 'required|string',  // ERD: mandatory (*)
+            'icon' => 'required|string'           // ERD: mandatory (*)
         ]);
 
         $validated['id_playlist_category'] = Str::uuid()->toString();
@@ -32,20 +32,25 @@ class PlaylistCategoryController extends Controller
 
     public function show($id)
     {
-        $category = PlaylistCategory::with('playlists')->find($id);
+        // PERBAIKAN: Menggunakan where()->first() karena PK bukan 'id' default
+        $category = PlaylistCategory::with('playlists')
+            ->where('id_playlist_category', $id)
+            ->first();
+
         if (!$category) return response()->json(['message' => 'Kategori tidak ditemukan'], 404);
         return response()->json(['message' => 'Detail kategori', 'data' => $category], 200);
     }
 
     public function update(Request $request, $id)
     {
-        $category = PlaylistCategory::query()->find($id);
+        // PERBAIKAN: Menggunakan where()->first() karena PK bukan 'id' default
+        $category = PlaylistCategory::query()->where('id_playlist_category', $id)->first();
         if (!$category) return response()->json(['message' => 'Kategori tidak ditemukan'], 404);
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:100',
-            'cover_image' => 'nullable|string',
-            'icon' => 'nullable|string'
+            'cover_image' => 'sometimes|required|string',
+            'icon' => 'sometimes|required|string'
         ]);
 
         $category->update($validated);

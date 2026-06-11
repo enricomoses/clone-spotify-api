@@ -22,7 +22,7 @@ class AlbumController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:150',
             'release' => 'required|date',
-            'cover_image' => 'nullable|string',
+            'cover_image' => 'required|string',  // ERD: mandatory (*)
             'artist_ids' => 'required|array',
             'artist_ids.*' => 'exists:artist,id_artist'
         ]);
@@ -114,6 +114,14 @@ class AlbumController extends Controller
     {
         $album = Album::query()->where('id_album', $id)->first();
         if (!$album) return response()->json(['message' => 'Album tidak ditemukan'], 404);
+
+        // Cek agar album tidak menjadi 0 artist (minimal 1 artist harus dimiliki album)
+        $currentArtistCount = $album->artists()->count();
+        if ($currentArtistCount <= 1) {
+            return response()->json([
+                'message' => 'Tidak bisa menghapus artis terakhir dari album. Album harus punya minimal 1 artist.'
+            ], 400);
+        }
 
         $album->artists()->detach($artist_id);
         return response()->json(['message' => 'Artis dihapus dari album'], 200);

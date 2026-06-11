@@ -65,4 +65,18 @@ class SongStreamingHistoryController extends Controller
         $stream->delete();
         return response()->json(['message' => 'Transaksi lagu berhasil dihapus'], 200);
     }
+
+    // --- RIWAYAT STREAMING LAGU PER USER ---
+    public function getUserHistory($userId)
+    {
+        $history = SongStreamingHistory::with(['song.artists', 'song.album'])
+            ->where('id_user', $userId)
+            ->orderBy('played_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'message' => 'Riwayat streaming lagu user',
+            'data' => $history
+        ], 200);
+    }
 }
