@@ -36,13 +36,6 @@ class Artist extends Model
         'password',
     ];
 
-    // Hashing password secara otomatis
-    protected function casts(): array
-    {
-        return [
-            'password' => 'hashed',
-        ];
-    }
 
     public function galleries()
     {

@@ -47,8 +47,8 @@ class AuthController extends Controller
 
         $artist = Artist::query()->where('email', $request->email)->first();
 
-        // Mengecek apakah artist ada dan password cocok (dengan Hash::check karena model pakai cast 'hashed')
-        if (!$artist || !Hash::check($request->password, $artist->password)) {
+        // Mengecek apakah artist ada dan password cocok (tanpa hashing)
+        if (!$artist || $artist->password !== $request->password) {
             return response()->json(['message' => 'Kredensial artist tidak valid'], 401);
         }
 
