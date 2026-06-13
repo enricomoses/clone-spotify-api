@@ -111,6 +111,9 @@ Route::get('/users/{id}/streaming-history/episodes', [EpisodeStreamingHistoryCon
 Route::post('/media/upload', [MediaController::class, 'uploadImage']);
 Route::delete('/media/delete', [MediaController::class, 'deleteImage']);
 
+Route::post('/media/audio/upload', [MediaController::class, 'uploadAudio']);
+Route::delete('/media/audio/delete', [MediaController::class, 'deleteAudio']);
+
 Route::get('/artists/{id}/song-streaming', [SongStreamingHistoryController::class, 'getArtistHistory']);
 
 

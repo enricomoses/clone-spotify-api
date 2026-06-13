@@ -13,16 +13,15 @@ class MediaController extends Controller
      */
     private function getCloudinary()
     {
-        // Mengambil konfigurasi langsung dari .env
         return new Cloudinary(env('CLOUDINARY_URL'));
     }
 
-    /**
-     * UPLOAD GAMBAR KE CLOUDINARY
-     */
+    // ==========================================
+    // BAGIAN 1: MANAJEMEN GAMBAR (IMAGE)
+    // ==========================================
+
     public function uploadImage(Request $request)
     {
-        // Validasi file yang diupload (maksimal 5MB)
         $request->validate([
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'folder' => 'nullable|string'
@@ -30,14 +29,12 @@ class MediaController extends Controller
 
         try {
             $folder = $request->folder ? 'spotify-clone/' . $request->folder : 'spotify-clone';
-
-            // Menggunakan UploadApi dari SDK PHP murni
             $cloudinary = $this->getCloudinary();
             $response = $cloudinary->uploadApi()->upload($request->file('image')->getRealPath(), [
-                'folder' => $folder
+                'folder' => $folder,
+                'resource_type' => 'image'
             ]);
 
-            // Response dari SDK berbentuk array/ArrayAccess
             return response()->json([
                 'message' => 'Gambar berhasil diunggah',
                 'secure_url' => $response['secure_url'],
@@ -48,9 +45,6 @@ class MediaController extends Controller
         }
     }
 
-    /**
-     * HAPUS GAMBAR DARI CLOUDINARY
-     */
     public function deleteImage(Request $request)
     {
         $request->validate([
@@ -58,35 +52,103 @@ class MediaController extends Controller
         ]);
 
         try {
-            $url = $request->image_url;
+            $publicId = $this->extractPublicId($request->image_url);
 
-            // Logika Ekstraksi Public ID dari URL Cloudinary
-            $pathParts = explode('/upload/', $url);
-
-            if (count($pathParts) < 2) {
-                return response()->json(['message' => 'URL gambar tidak valid untuk Cloudinary'], 400);
-            }
-
-            $pathAfterUpload = $pathParts[1];
-
-            // Hapus versi URL (contoh: v1234567890/) jika ada
-            if (preg_match('/^v\d+\//', $pathAfterUpload)) {
-                $pathAfterUpload = preg_replace('/^v\d+\//', '', $pathAfterUpload);
-            }
-
-            // Hapus ekstensi file (.jpg, .png) untuk mendapatkan public_id murni
-            $publicId = substr($pathAfterUpload, 0, strrpos($pathAfterUpload, '.'));
-
-            // Eksekusi penghapusan menggunakan UploadApi
             $cloudinary = $this->getCloudinary();
+            // Default resource_type untuk destroy adalah 'image'
             $cloudinary->uploadApi()->destroy($publicId);
 
             return response()->json([
-                'message' => 'Gambar berhasil dihapus dari penyimpanan',
+                'message' => 'Gambar berhasil dihapus',
                 'deleted_public_id' => $publicId
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal menghapus gambar: ' . $e->getMessage()], 500);
         }
+    }
+
+    // ==========================================
+    // BAGIAN 2: MANAJEMEN AUDIO (SONG/EPISODE)
+    // ==========================================
+
+    public function uploadAudio(Request $request)
+    {
+        // Validasi file audio (maksimal 20MB)
+        $request->validate([
+            'audio' => 'required|mimes:mp3,wav,aac,m4a,ogg|max:20480',
+            'folder' => 'nullable|string'
+        ]);
+
+        try {
+            $folder = $request->folder ? 'spotify-clone/audio/' . $request->folder : 'spotify-clone/audio';
+            $cloudinary = $this->getCloudinary();
+
+            // Upload dengan parameter optimasi kualitas dan bitrate
+            $response = $cloudinary->uploadApi()->upload($request->file('audio')->getRealPath(), [
+                'folder' => $folder,
+                'resource_type' => 'video', // WAJIB 'video' untuk file audio di Cloudinary
+                'quality' => 'auto',
+                'bitrate' => '64k'          // Hemat bandwidth
+            ]);
+
+            return response()->json([
+                'message' => 'Audio berhasil diunggah dan dioptimasi',
+                'secure_url' => $response['secure_url'],
+                'public_id' => $response['public_id'],
+                'duration' => $response['duration'] ?? 0 // Cloudinary otomatis menghitung durasi audio (dalam detik)
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal mengunggah audio: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function deleteAudio(Request $request)
+    {
+        $request->validate([
+            'audio_url' => 'required|url'
+        ]);
+
+        try {
+            $publicId = $this->extractPublicId($request->audio_url);
+
+            $cloudinary = $this->getCloudinary();
+
+            // PENTING: Wajib menyertakan resource_type => 'video' saat menghapus audio
+            $cloudinary->uploadApi()->destroy($publicId, [
+                'resource_type' => 'video'
+            ]);
+
+            return response()->json([
+                'message' => 'Audio berhasil dihapus dari penyimpanan',
+                'deleted_public_id' => $publicId
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal menghapus audio: ' . $e->getMessage()], 500);
+        }
+    }
+
+    // ==========================================
+    // FUNGSI HELPER
+    // ==========================================
+
+    /**
+     * Mengekstrak Public ID murni dari URL Cloudinary
+     */
+    private function extractPublicId($url)
+    {
+        $pathParts = explode('/upload/', $url);
+        if (count($pathParts) < 2) {
+            throw new \Exception('URL tidak valid untuk Cloudinary');
+        }
+
+        $pathAfterUpload = $pathParts[1];
+
+        // Hapus versi URL (contoh: v1234567890/)
+        if (preg_match('/^v\d+\//', $pathAfterUpload)) {
+            $pathAfterUpload = preg_replace('/^v\d+\//', '', $pathAfterUpload);
+        }
+
+        // Hapus ekstensi file
+        return substr($pathAfterUpload, 0, strrpos($pathAfterUpload, '.'));
     }
 }
