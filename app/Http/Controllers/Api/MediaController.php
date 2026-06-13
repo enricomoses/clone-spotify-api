@@ -75,7 +75,7 @@ class MediaController extends Controller
     {
         // Validasi file audio (maksimal 20MB)
         $request->validate([
-            'audio' => 'required|mimes:mp3,wav,aac,m4a,ogg|max:20480',
+            'audio' => 'required|file|extensions:mp3,wav,aac,m4a,ogg|max:20480',
             'folder' => 'nullable|string'
         ]);
 
