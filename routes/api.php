@@ -38,7 +38,7 @@ Route::post('/login/artist', [AuthController::class, 'loginArtist']);
 // ==========================================
 
 // Kategori & Discover
-Route::get('/playlist-categories', [PlaylistCategoryController::class, 'index']);
+Route::get('/genres', [PlaylistCategoryController::class, 'allGenres']);
 Route::get('/songs/discover-weekly', [SongController::class, 'discoverWeekly']);
 
 // Manajemen Isi Playlist (dengan validasi role)
@@ -125,6 +125,7 @@ Route::apiResource('playlists', PlaylistController::class);
 Route::apiResource('podcasts', PodcastController::class);
 Route::apiResource('episodes', EpisodeController::class);
 Route::apiResource('concerts', ConcertController::class);
+Route::apiResource('playlist-categories', PlaylistCategoryController::class);
 Route::apiResource('podcast-categories', PodcastCategoryController::class);
 Route::apiResource('song-streaming', SongStreamingHistoryController::class);
 Route::apiResource('episode-streaming', EpisodeStreamingHistoryController::class);

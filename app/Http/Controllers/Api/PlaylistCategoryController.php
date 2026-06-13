@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PlaylistCategory;
+use App\Models\PodcastCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -12,8 +13,28 @@ class PlaylistCategoryController extends Controller
 {
     public function index()
     {
-        $categories = PlaylistCategory::with('playlists')->get();
+        $categories = PlaylistCategory::with('playlists')->get()->map(function ($category) {
+            $category->type = 'playlist';
+            return $category;
+        });
         return response()->json(['message' => 'Data kategori playlist', 'data' => $categories], 200);
+    }
+
+    public function allGenres()
+    {
+        $playlistCategories = PlaylistCategory::all()->map(function ($category) {
+            $category->type = 'playlist';
+            return $category;
+        });
+
+        $podcastCategories = PodcastCategory::all()->map(function ($category) {
+            $category->type = 'podcast';
+            return $category;
+        });
+
+        $merged = $playlistCategories->concat($podcastCategories);
+
+        return response()->json(['message' => 'Data semua genre', 'data' => $merged], 200);
     }
 
     public function store(Request $request)
@@ -38,6 +59,8 @@ class PlaylistCategoryController extends Controller
             ->first();
 
         if (!$category) return response()->json(['message' => 'Kategori tidak ditemukan'], 404);
+        
+        $category->type = 'playlist';
         return response()->json(['message' => 'Detail kategori', 'data' => $category], 200);
     }
 

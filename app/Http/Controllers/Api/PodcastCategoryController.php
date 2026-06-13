@@ -12,7 +12,10 @@ class PodcastCategoryController extends Controller
 {
     public function index()
     {
-        $categories = PodcastCategory::all();
+        $categories = PodcastCategory::all()->map(function ($category) {
+            $category->type = 'podcast';
+            return $category;
+        });
         return response()->json(['message' => 'Data kategori podcast', 'data' => $categories], 200);
     }
 
@@ -35,6 +38,7 @@ class PodcastCategoryController extends Controller
         $category = PodcastCategory::query()->with('podcasts')->where('id_podcast_category', $id)->first();
         if (!$category) return response()->json(['message' => 'Kategori podcast tidak ditemukan'], 404);
 
+        $category->type = 'podcast';
         return response()->json(['message' => 'Detail kategori podcast', 'data' => $category], 200);
     }
 
