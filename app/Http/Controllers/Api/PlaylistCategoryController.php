@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PlaylistCategory;
-use App\Models\PodcastCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -18,23 +17,6 @@ class PlaylistCategoryController extends Controller
             return $category;
         });
         return response()->json(['message' => 'Data kategori playlist', 'data' => $categories], 200);
-    }
-
-    public function allGenres()
-    {
-        $playlistCategories = PlaylistCategory::all()->map(function ($category) {
-            $category->type = 'playlist';
-            return $category;
-        });
-
-        $podcastCategories = PodcastCategory::all()->map(function ($category) {
-            $category->type = 'podcast';
-            return $category;
-        });
-
-        $merged = $playlistCategories->concat($podcastCategories);
-
-        return response()->json(['message' => 'Data semua genre', 'data' => $merged], 200);
     }
 
     public function store(Request $request)

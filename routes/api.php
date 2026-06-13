@@ -38,7 +38,6 @@ Route::post('/login/artist', [AuthController::class, 'loginArtist']);
 // ==========================================
 
 // Kategori & Discover
-Route::get('/genres', [PlaylistCategoryController::class, 'allGenres']);
 Route::get('/songs/discover-weekly', [SongController::class, 'discoverWeekly']);
 
 // Manajemen Isi Playlist (dengan validasi role)
