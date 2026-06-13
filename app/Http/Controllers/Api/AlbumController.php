@@ -12,7 +12,7 @@ class AlbumController extends Controller
 {
     public function index()
     {
-        $albums = Album::with('artists', 'songs')->get();
+        $albums = Album::with('artists', 'songs.artists')->get();
         return response()->json(['message' => 'Data album', 'data' => $albums], 200);
     }
 
@@ -41,7 +41,7 @@ class AlbumController extends Controller
         $album->artists()->attach($validated['artist_ids']);
 
         // 3. Load relasi agar data yang dikirim balik ke Next.js langsung lengkap
-        $album->load('artists', 'songs');
+        $album->load('artists', 'songs.artists');
 
         return response()->json(['message' => 'Album berhasil ditambahkan', 'data' => $album], 201);
     }
@@ -49,7 +49,7 @@ class AlbumController extends Controller
     public function show($id)
     {
         // PERBAIKAN: Menggunakan where()->first() agar aman dari alarm false-positive Intelephense
-        $album = Album::with('artists', 'songs')->where('id_album', $id)->first();
+        $album = Album::with('artists', 'songs.artists')->where('id_album', $id)->first();
 
         if (!$album) return response()->json(['message' => 'Album tidak ditemukan'], 404);
         return response()->json(['message' => 'Detail album', 'data' => $album], 200);
@@ -76,7 +76,7 @@ class AlbumController extends Controller
             $album->artists()->sync($validated['artist_ids']);
         }
 
-        $album->load('artists', 'songs');
+        $album->load('artists', 'songs.artists');
         return response()->json(['message' => 'Album berhasil diupdate', 'data' => $album], 200);
     }
 
