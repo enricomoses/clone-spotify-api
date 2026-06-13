@@ -79,4 +79,21 @@ class SongStreamingHistoryController extends Controller
             'data' => $history
         ], 200);
     }
+
+    public function getArtistHistory($artistId)
+    {
+        // Ambil data streaming history yang relasi lagunya dimiliki oleh artist dengan ID tersebut
+        $history = SongStreamingHistory::with(['user', 'song.album'])
+            ->whereHas('song.artists', function ($query) use ($artistId) {
+                $query->where('artist.id_artist', $artistId);
+            })
+            ->orderBy('played_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'message' => 'Riwayat streaming lagu milik artis berhasil diambil',
+            'total_streams' => $history->count(),
+            'data' => $history
+        ], 200);
+    }
 }

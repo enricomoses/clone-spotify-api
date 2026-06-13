@@ -111,6 +111,9 @@ Route::get('/users/{id}/streaming-history/episodes', [EpisodeStreamingHistoryCon
 Route::post('/media/upload', [MediaController::class, 'uploadImage']);
 Route::delete('/media/delete', [MediaController::class, 'deleteImage']);
 
+Route::get('/artists/{id}/song-streaming', [SongStreamingHistoryController::class, 'getArtistHistory']);
+
+
 // ==========================================
 // 3. RESOURCE ROUTES (CRUD Standar)
 // ==========================================
