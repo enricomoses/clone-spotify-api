@@ -114,6 +114,9 @@ Route::delete('/media/delete', [MediaController::class, 'deleteImage']);
 Route::post('/media/audio/upload', [MediaController::class, 'uploadAudio']);
 Route::delete('/media/audio/delete', [MediaController::class, 'deleteAudio']);
 
+Route::post('/media/video/upload', [MediaController::class, 'uploadVideo']);
+Route::delete('/media/video/delete', [MediaController::class, 'deleteVideo']);
+
 Route::get('/artists/{id}/song-streaming', [SongStreamingHistoryController::class, 'getArtistHistory']);
 
 
