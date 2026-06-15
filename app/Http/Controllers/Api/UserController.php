@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Playlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class UserController extends Controller
@@ -68,14 +69,34 @@ class UserController extends Controller
         // CONSTRAINT / VALIDASI ATURAN BISNIS SAAT UPDATE
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:100',
-            // Rule unik ini mengecualikan id_user yang sedang diupdate agar tidak error
-            'email' => 'sometimes|required|email|unique:User,email,' . $id . ',id_user',
-            'password' => 'sometimes|required|string|min:6',
             'birthday' => 'nullable|date|before:today', // Constraint: Tanggal lahir harus sebelum hari ini
             'gender' => 'nullable|string',
             'country' => 'nullable|string',
-            'profile_picture' => 'nullable|string'
+            'profile_picture' => 'nullable|string',
+            'current_password' => [
+                'required_with:password',
+                'string',
+                function ($attribute, $value, $fail) use ($user) {
+                    if ($value && !Hash::check($value, $user->password)) {
+                        $fail('Password lama tidak sesuai.');
+                    }
+                }
+            ],
+            'password' => [
+                'sometimes',
+                'required',
+                'string',
+                'min:6',
+                function ($attribute, $value, $fail) use ($user) {
+                    if ($value && Hash::check($value, $user->password)) {
+                        $fail('Password baru tidak boleh sama dengan password lama.');
+                    }
+                }
+            ]
         ]);
+
+        // Hapus current_password agar tidak ikut dimasukkan ke update query database
+        unset($validated['current_password']);
 
         $user->update($validated);
         return response()->json(['message' => 'User berhasil diupdate', 'data' => $user], 200);
