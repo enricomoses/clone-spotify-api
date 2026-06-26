@@ -19,7 +19,7 @@ class PlaylistController extends Controller
 
     public function show($id)
     {
-        $playlist = Playlist::with(['songs.artists', 'collaborators', 'category', 'followers'])
+        $playlist = Playlist::with(['songs.artists', 'songs.album', 'collaborators', 'category', 'followers'])
             ->where('id_playlist', $id)
             ->first();
 

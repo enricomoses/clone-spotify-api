@@ -14,13 +14,13 @@ class ArtistController extends Controller
     public function index()
     {
         // Menampilkan data artis lengkap dengan semua relasinya
-        $artists = Artist::with(['albums', 'songs', 'concerts', 'galleries'])->get();
+        $artists = Artist::with(['albums', 'songs.album', 'songs.artists', 'concerts', 'galleries'])->get();
         return response()->json(['message' => 'Data artist', 'data' => $artists], 200);
     }
 
     public function show($id)
     {
-        $artist = Artist::with(['albums', 'songs', 'concerts', 'galleries', 'followers'])
+        $artist = Artist::with(['albums', 'songs.album', 'songs.artists', 'concerts', 'galleries', 'followers'])
             ->where('id_artist', $id)
             ->first();
 

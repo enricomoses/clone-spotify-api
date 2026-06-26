@@ -49,6 +49,7 @@ class UserController extends Controller
             'followedArtists',
             'followedPodcasts',
             'likedSongs.artists',
+            'likedSongs.album',
             'collaborativePlaylists',
             'podcasts'
         ])->where('id_user', $id)->first();
