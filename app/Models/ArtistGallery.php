@@ -9,7 +9,7 @@ class ArtistGallery extends Model
 {
     use HasFactory;
 
-    protected $table = 'artist_gallery';
+    protected $table = 'artist_galleries';
     protected $primaryKey = 'id_gallery';
     protected $keyType = 'string';
     public $incrementing = false;

@@ -19,8 +19,8 @@ class EpisodeStreamingHistoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_user' => 'required|string|exists:User,id_user',
-            'id_episode' => 'required|string|exists:episode,id_episode'
+            'id_user' => 'required|string|exists:users,id_user',
+            'id_episode' => 'required|string|exists:episodes,id_episode'
         ]);
 
         $validated['id_stream'] = Str::uuid()->toString();

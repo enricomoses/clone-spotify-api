@@ -9,7 +9,7 @@ class SongStreamingHistory extends Model
 {
     use HasFactory;
 
-    protected $table = 'song_streaminghistory'; // Sesuai nama di pgAdmin Anda
+    protected $table = 'song_streaming_histories'; // Sesuai nama di pgAdmin Anda
     protected $primaryKey = 'id_stream';
     protected $keyType = 'string';
     public $incrementing = false;

@@ -23,7 +23,7 @@ class UserController extends Controller
         // 1. Validate input from frontend
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'email' => 'required|email|unique:User,email',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
             'birthday' => 'nullable|date|before:today',
             'gender' => 'nullable|string',

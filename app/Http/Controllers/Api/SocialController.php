@@ -20,7 +20,7 @@ class SocialController extends Controller
         $user = $this->getUser($id);
         if (!$user) return response()->json(['message' => 'User not found'], 404);
 
-        $request->validate(['song_id' => 'required|exists:song,id_song']);
+        $request->validate(['song_id' => 'required|exists:songs,id_song']);
 
         $user->likedSongs()->syncWithoutDetaching([$request->song_id]);
         return response()->json(['message' => 'Song liked successfully'], 200);
@@ -41,7 +41,7 @@ class SocialController extends Controller
         $user = $this->getUser($id);
         if (!$user) return response()->json(['message' => 'User not found'], 404);
 
-        $request->validate(['target_id' => 'required|exists:User,id_user']);
+        $request->validate(['target_id' => 'required|exists:users,id_user']);
 
         // Prevent user from following themselves
         if ($id === $request->target_id) {
@@ -67,7 +67,7 @@ class SocialController extends Controller
         $user = $this->getUser($id);
         if (!$user) return response()->json(['message' => 'User not found'], 404);
 
-        $request->validate(['artist_id' => 'required|exists:artist,id_artist']);
+        $request->validate(['artist_id' => 'required|exists:artists,id_artist']);
 
         $user->followedArtists()->syncWithoutDetaching([$request->artist_id]);
         return response()->json(['message' => 'Artist followed successfully'], 200);
@@ -88,7 +88,7 @@ class SocialController extends Controller
         $user = $this->getUser($id);
         if (!$user) return response()->json(['message' => 'User not found'], 404);
 
-        $request->validate(['playlist_id' => 'required|exists:playlist,id_playlist']);
+        $request->validate(['playlist_id' => 'required|exists:playlists,id_playlist']);
 
         $user->followedPlaylists()->syncWithoutDetaching([$request->playlist_id]);
         return response()->json(['message' => 'Playlist followed successfully'], 200);
@@ -109,7 +109,7 @@ class SocialController extends Controller
         $user = $this->getUser($id);
         if (!$user) return response()->json(['message' => 'User not found'], 404);
 
-        $request->validate(['podcast_id' => 'required|exists:podcast,id_podcast']);
+        $request->validate(['podcast_id' => 'required|exists:podcasts,id_podcast']);
 
         $user->followedPodcasts()->syncWithoutDetaching([$request->podcast_id]);
         return response()->json(['message' => 'Podcast followed successfully'], 200);

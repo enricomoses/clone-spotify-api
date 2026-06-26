@@ -34,7 +34,7 @@ class ConcertController extends Controller
             'event_at' => 'required|date',
             'ticket_url' => 'required|url',
             'artist_ids' => 'required|array',
-            'artist_ids.*' => 'exists:artist,id_artist'
+            'artist_ids.*' => 'exists:artists,id_artist'
         ]);
 
         $concertData = [
@@ -68,7 +68,7 @@ class ConcertController extends Controller
             'event_at' => 'sometimes|required|date',
             'ticket_url' => 'sometimes|required|url',
             'artist_ids' => 'sometimes|required|array',
-            'artist_ids.*' => 'exists:artist,id_artist'
+            'artist_ids.*' => 'exists:artists,id_artist'
         ]);
 
         // Update basic concert data
@@ -105,7 +105,7 @@ class ConcertController extends Controller
         $concert = Concert::query()->where('id_concert', $id)->first();
         if (!$concert) return response()->json(['message' => 'Concert not found'], 404);
 
-        $request->validate(['artist_id' => 'required|exists:artist,id_artist']);
+        $request->validate(['artist_id' => 'required|exists:artists,id_artist']);
 
         $concert->artists()->syncWithoutDetaching([$request->artist_id]);
         return response()->json(['message' => 'Artist added to concert successfully'], 200);

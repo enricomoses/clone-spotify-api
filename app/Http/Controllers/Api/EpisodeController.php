@@ -36,8 +36,8 @@ class EpisodeController extends Controller
             'audio_url' => 'required|string',
             'video_url' => 'nullable|string',
             'thumbnail_image' => 'nullable|string',
-            'id_podcast' => 'required|string|exists:podcast,id_podcast',
-            'id_user' => 'required|string|exists:User,id_user' // User making the request
+            'id_podcast' => 'required|string|exists:podcasts,id_podcast',
+            'id_user' => 'required|string|exists:users,id_user' // User making the request
         ]);
 
         // Ownership validation: only the podcast owner can add episodes
@@ -73,7 +73,7 @@ class EpisodeController extends Controller
 
         // Ownership validation: only the podcast owner can update episodes
         $request->validate([
-            'id_user' => 'required|string|exists:User,id_user'
+            'id_user' => 'required|string|exists:users,id_user'
         ]);
 
         $podcast = Podcast::where('id_podcast', $episode->id_podcast)->first();

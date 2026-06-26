@@ -12,7 +12,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     // 1. Konfigurasi Custom Database (Sesuai dengan pgAdmin Anda)
-    protected $table = 'User'; // Gunakan huruf kapital jika di pgAdmin namanya "User"
+    protected $table = 'users'; // Gunakan huruf kapital jika di pgAdmin namanya "User"
     protected $primaryKey = 'id_user';
     protected $keyType = 'string';
     public $incrementing = false;

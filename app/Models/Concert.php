@@ -9,7 +9,7 @@ class Concert extends Model
 {
     use HasFactory;
 
-    protected $table = 'concert';
+    protected $table = 'concerts';
     protected $primaryKey = 'id_concert';
     protected $keyType = 'string';
     public $incrementing = false;

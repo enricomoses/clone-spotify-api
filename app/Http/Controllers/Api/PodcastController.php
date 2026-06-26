@@ -24,9 +24,9 @@ class PodcastController extends Controller
             'about' => 'nullable|string',
             'cover_image' => 'nullable|string',
             // Category is optional (nullable)
-            'id_podcast_category' => 'nullable|string|exists:podcastcategory,id_podcast_category',
+            'id_podcast_category' => 'nullable|string|exists:podcast_categories,id_podcast_category',
             // Creator/User is required
-            'id_user' => 'required|string|exists:User,id_user'
+            'id_user' => 'required|string|exists:users,id_user'
         ]);
 
         $validated['id_podcast'] = Str::uuid()->toString();
@@ -60,8 +60,8 @@ class PodcastController extends Controller
             'name' => 'sometimes|required|string|max:150',
             'about' => 'nullable|string',
             'cover_image' => 'nullable|string',
-            'id_podcast_category' => 'nullable|string|exists:podcastcategory,id_podcast_category',
-            'id_user' => 'sometimes|required|string|exists:User,id_user'
+            'id_podcast_category' => 'nullable|string|exists:podcast_categories,id_podcast_category',
+            'id_user' => 'sometimes|required|string|exists:users,id_user'
         ]);
 
         $podcast->update($validated);

@@ -9,7 +9,7 @@ class Playlist extends Model
 {
     use HasFactory;
 
-    protected $table = 'playlist';
+    protected $table = 'playlists';
     protected $primaryKey = 'id_playlist';
     protected $keyType = 'string';
     public $incrementing = false;

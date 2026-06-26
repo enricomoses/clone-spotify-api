@@ -10,7 +10,7 @@ class Album extends Model
     use HasFactory;
 
     // Konfigurasi tabel sesuai pgAdmin
-    protected $table = 'album';
+    protected $table = 'albums';
     protected $primaryKey = 'id_album';
     protected $keyType = 'string';
     public $incrementing = false;

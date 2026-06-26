@@ -11,7 +11,7 @@ class Artist extends Model
     use HasApiTokens, HasFactory;
 
     // Konfigurasi tabel sesuai pgAdmin
-    protected $table = 'artist';
+    protected $table = 'artists';
     protected $primaryKey = 'id_artist';
     protected $keyType = 'string';
     public $incrementing = false;

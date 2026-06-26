@@ -24,7 +24,7 @@ class AlbumController extends Controller
             'release' => 'required|date',
             'cover_image' => 'required|string',  // ERD: mandatory (*)
             'artist_ids' => 'required|array',
-            'artist_ids.*' => 'exists:artist,id_artist'
+            'artist_ids.*' => 'exists:artists,id_artist'
         ]);
 
         $albumData = [
@@ -65,7 +65,7 @@ class AlbumController extends Controller
             'release' => 'sometimes|required|date',
             'cover_image' => 'nullable|string',
             'artist_ids' => 'sometimes|required|array',
-            'artist_ids.*' => 'exists:artist,id_artist'
+            'artist_ids.*' => 'exists:artists,id_artist'
         ]);
 
         // Update basic album data
@@ -104,7 +104,7 @@ class AlbumController extends Controller
         $album = Album::query()->where('id_album', $id)->first();
         if (!$album) return response()->json(['message' => 'Album not found'], 404);
 
-        $request->validate(['artist_id' => 'required|exists:artist,id_artist']);
+        $request->validate(['artist_id' => 'required|exists:artists,id_artist']);
 
         $album->artists()->syncWithoutDetaching([$request->artist_id]);
         return response()->json(['message' => 'Artist added to album successfully'], 200);

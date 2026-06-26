@@ -9,7 +9,7 @@ class PlaylistCategory extends Model
 {
     use HasFactory;
 
-    protected $table = 'playlistcategory'; // Sesuai nama di pgAdmin Anda
+    protected $table = 'playlist_categories'; // Sesuai nama di pgAdmin Anda
     protected $primaryKey = 'id_playlist_category';
     protected $keyType = 'string';
     public $incrementing = false;

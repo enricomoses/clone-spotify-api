@@ -9,7 +9,7 @@ class Episode extends Model
 {
     use HasFactory;
 
-    protected $table = 'episode';
+    protected $table = 'episodes';
     protected $primaryKey = 'id_episode';
     protected $keyType = 'string';
     public $incrementing = false;

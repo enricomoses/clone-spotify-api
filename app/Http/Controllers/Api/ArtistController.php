@@ -33,7 +33,7 @@ class ArtistController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:150',
-            'email' => 'required|email|unique:artist,email',
+            'email' => 'required|email|unique:artists,email',
             'password' => 'required|string|min:6',
             'instagram' => 'nullable|string',
             'facebook' => 'nullable|string',
@@ -61,7 +61,7 @@ class ArtistController extends Controller
         // Using unique with ID exception so updating own profile with same email doesn't trigger error
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:150',
-            'email' => 'sometimes|required|email|unique:artist,email,' . $id . ',id_artist',
+            'email' => 'sometimes|required|email|unique:artists,email,' . $id . ',id_artist',
             'password' => 'sometimes|required|string|min:6',
             'instagram' => 'nullable|string',
             'facebook' => 'nullable|string',
@@ -136,7 +136,7 @@ class ArtistController extends Controller
         $artist = Artist::query()->where('id_artist', $id)->first();
         if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
 
-        $request->validate(['album_id' => 'required|exists:album,id_album']);
+        $request->validate(['album_id' => 'required|exists:albums,id_album']);
 
         $artist->albums()->syncWithoutDetaching([$request->album_id]);
         return response()->json(['message' => 'Album added to artist profile successfully'], 200);
@@ -156,7 +156,7 @@ class ArtistController extends Controller
         $artist = Artist::query()->where('id_artist', $id)->first();
         if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
 
-        $request->validate(['song_id' => 'required|exists:song,id_song']);
+        $request->validate(['song_id' => 'required|exists:songs,id_song']);
 
         $artist->songs()->syncWithoutDetaching([$request->song_id]);
         return response()->json(['message' => 'Song added to artist profile successfully'], 200);
@@ -235,7 +235,7 @@ class ArtistController extends Controller
         $artist = Artist::query()->where('id_artist', $id)->first();
         if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
 
-        $request->validate(['concert_id' => 'required|exists:concert,id_concert']);
+        $request->validate(['concert_id' => 'required|exists:concerts,id_concert']);
 
         $artist->concerts()->syncWithoutDetaching([$request->concert_id]);
         return response()->json(['message' => 'Concert added to artist profile successfully'], 200);

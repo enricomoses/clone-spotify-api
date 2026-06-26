@@ -22,16 +22,16 @@ class SongController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:150',
             'duration' => 'required|integer|min:1',
-            'id_album' => 'nullable|string|exists:album,id_album',
+            'id_album' => 'nullable|string|exists:albums,id_album',
             'audio_url' => 'required|string',
 
             // Required: artists who perform the song (array)
             'artist_ids' => 'required|array|min:1',
-            'artist_ids.*' => 'exists:artist,id_artist',
+            'artist_ids.*' => 'exists:artists,id_artist',
 
             // Optional: If song is directly added to a playlist on creation
             'playlist_ids' => 'nullable|array',
-            'playlist_ids.*' => 'exists:playlist,id_playlist'
+            'playlist_ids.*' => 'exists:playlists,id_playlist'
         ]);
 
         $songData = [
@@ -76,12 +76,12 @@ class SongController extends Controller
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:150',
             'duration' => 'sometimes|required|integer|min:1',
-            'id_album' => 'nullable|string|exists:album,id_album',
+            'id_album' => 'nullable|string|exists:albums,id_album',
             'audio_url' => 'sometimes|required|string',
             'artist_ids' => 'sometimes|required|array',
-            'artist_ids.*' => 'exists:artist,id_artist',
+            'artist_ids.*' => 'exists:artists,id_artist',
             'playlist_ids' => 'nullable|array',
-            'playlist_ids.*' => 'exists:playlist,id_playlist'
+            'playlist_ids.*' => 'exists:playlists,id_playlist'
         ]);
 
         // Update core data

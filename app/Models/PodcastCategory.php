@@ -9,7 +9,7 @@ class PodcastCategory extends Model
 {
     use HasFactory;
 
-    protected $table = 'podcastcategory'; // Sesuai nama di pgAdmin Anda
+    protected $table = 'podcast_categories'; // Sesuai nama di pgAdmin Anda
     protected $primaryKey = 'id_podcast_category';
     protected $keyType = 'string';
     public $incrementing = false;

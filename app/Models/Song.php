@@ -9,7 +9,7 @@ class Song extends Model
 {
     use HasFactory;
 
-    protected $table = 'song';
+    protected $table = 'songs';
     protected $primaryKey = 'id_song';
     protected $keyType = 'string';
     public $incrementing = false;

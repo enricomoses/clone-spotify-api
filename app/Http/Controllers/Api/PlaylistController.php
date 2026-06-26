@@ -35,8 +35,8 @@ class PlaylistController extends Controller
             'name' => 'required|string|max:150',
             'description' => 'nullable|string',
             'cover_image' => 'nullable|string',
-            'id_playlist_category' => 'nullable|string|exists:playlistcategory,id_playlist_category',
-            'id_user' => 'required|string|exists:User,id_user'
+            'id_playlist_category' => 'nullable|string|exists:playlist_categories,id_playlist_category',
+            'id_user' => 'required|string|exists:users,id_user'
         ]);
 
         $playlistData = [
@@ -63,7 +63,7 @@ class PlaylistController extends Controller
 
         // Validation: only Owner can update playlist
         $request->validate([
-            'id_user' => 'required|string|exists:User,id_user'
+            'id_user' => 'required|string|exists:users,id_user'
         ]);
 
         $isOwner = PlaylistCollaborator::where('id_playlist', $id)
@@ -79,7 +79,7 @@ class PlaylistController extends Controller
             'name' => 'sometimes|required|string|max:150',
             'description' => 'nullable|string',
             'cover_image' => 'nullable|string',
-            'id_playlist_category' => 'nullable|string|exists:playlistcategory,id_playlist_category'
+            'id_playlist_category' => 'nullable|string|exists:playlist_categories,id_playlist_category'
         ]);
 
         $playlist->update($validated);
@@ -136,8 +136,8 @@ class PlaylistController extends Controller
         if (!$playlist) return response()->json(['message' => 'Playlist not found'], 404);
 
         $request->validate([
-            'song_id' => 'required|exists:song,id_song',
-            'id_user' => 'required|string|exists:User,id_user'
+            'song_id' => 'required|exists:songs,id_song',
+            'id_user' => 'required|string|exists:users,id_user'
         ]);
 
         // Validation: only Owner or Editor can add songs
@@ -185,8 +185,8 @@ class PlaylistController extends Controller
         if (!$playlist) return response()->json(['message' => 'Playlist not found'], 404);
 
         $request->validate([
-            'user_id' => 'required|exists:User,id_user',
-            'id_user' => 'required|string|exists:User,id_user' // User making the request (must be Owner)
+            'user_id' => 'required|exists:users,id_user',
+            'id_user' => 'required|string|exists:users,id_user' // User making the request (must be Owner)
         ]);
 
         // Validation: only Owner can add collaborators

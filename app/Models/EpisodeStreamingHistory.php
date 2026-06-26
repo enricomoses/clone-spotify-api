@@ -9,7 +9,7 @@ class EpisodeStreamingHistory extends Model
 {
     use HasFactory;
 
-    protected $table = 'episode_streaminghistory';
+    protected $table = 'episode_streaming_histories';
     protected $primaryKey = 'id_stream';
     protected $keyType = 'string';
     public $incrementing = false;

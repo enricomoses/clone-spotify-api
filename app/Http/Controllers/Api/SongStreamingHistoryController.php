@@ -19,8 +19,8 @@ class SongStreamingHistoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_user' => 'required|string|exists:User,id_user',
-            'id_song' => 'required|string|exists:song,id_song'
+            'id_user' => 'required|string|exists:users,id_user',
+            'id_song' => 'required|string|exists:songs,id_song'
         ]);
 
         $validated['id_stream'] = Str::uuid()->toString();
