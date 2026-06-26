@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\EpisodeStreamingHistory; // Pastikan model ini sudah ada
+use App\Models\EpisodeStreamingHistory; // Ensure this model exists
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -12,10 +12,10 @@ class EpisodeStreamingHistoryController extends Controller
     public function index()
     {
         $history = EpisodeStreamingHistory::with(['user', 'episode'])->orderBy('played_at', 'desc')->get();
-        return response()->json(['message' => 'Riwayat streaming episode berhasil diambil', 'data' => $history], 200);
+        return response()->json(['message' => 'Episode streaming history retrieved successfully', 'data' => $history], 200);
     }
 
-    // --- LOGIKA SAAT TOMBOL PLAY DITEKAN ---
+    // --- LOGIC WHEN PLAY BUTTON IS PRESSED ---
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -29,41 +29,41 @@ class EpisodeStreamingHistoryController extends Controller
 
         $stream = EpisodeStreamingHistory::create($validated);
 
-        return response()->json(['message' => 'Episode mulai diputar', 'data' => $stream], 201);
+        return response()->json(['message' => 'Episode playback started', 'data' => $stream], 201);
     }
 
     public function show($id)
     {
         $stream = EpisodeStreamingHistory::with(['user', 'episode'])->where('id_stream', $id)->first();
-        if (!$stream) return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+        if (!$stream) return response()->json(['message' => 'Stream record not found'], 404);
 
-        return response()->json(['message' => 'Detail transaksi episode', 'data' => $stream], 200);
+        return response()->json(['message' => 'Episode stream detail', 'data' => $stream], 200);
     }
 
-    // --- LOGIKA SAAT TOMBOL PAUSE DITEKAN ATAU EPISODE SELESAI ---
+    // --- LOGIC WHEN PAUSE IS PRESSED OR EPISODE FINISHES ---
     public function update(Request $request, $id)
     {
         $stream = EpisodeStreamingHistory::query()->where('id_stream', $id)->first();
-        if (!$stream) return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+        if (!$stream) return response()->json(['message' => 'Transaction not found'], 404);
 
         $validated = $request->validate([
             'play_duration' => 'required|integer|min:1'
         ]);
 
         $stream->update($validated);
-        return response()->json(['message' => 'Durasi putar episode berhasil disimpan', 'data' => $stream], 200);
+        return response()->json(['message' => 'Episode play duration saved successfully', 'data' => $stream], 200);
     }
 
     public function destroy($id)
     {
         $stream = EpisodeStreamingHistory::query()->where('id_stream', $id)->first();
-        if (!$stream) return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+        if (!$stream) return response()->json(['message' => 'Transaction not found'], 404);
 
         $stream->delete();
-        return response()->json(['message' => 'Transaksi episode berhasil dihapus'], 200);
+        return response()->json(['message' => 'Episode stream record deleted successfully'], 200);
     }
 
-    // --- RIWAYAT STREAMING EPISODE PER USER ---
+    // --- EPISODE STREAMING HISTORY PER USER ---
     public function getUserHistory($userId)
     {
         $history = EpisodeStreamingHistory::with(['episode.podcast'])
@@ -72,7 +72,7 @@ class EpisodeStreamingHistoryController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Riwayat streaming episode user',
+            'message' => 'User episode streaming history',
             'data' => $history
         ], 200);
     }

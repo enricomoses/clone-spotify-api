@@ -6,15 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Song;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB; // Wajib ditambahkan untuk eksekusi query pembersihan relasi
+use Illuminate\Support\Facades\DB; // Required for executing relation cleanup queries
 
 class SongController extends Controller
 {
     public function index()
     {
-        // Menampilkan semua lagu beserta data album dan artisnya
+        // Display all songs with album and artist data
         $songs = Song::with(['album', 'artists'])->get();
-        return response()->json(['message' => 'Data lagu berhasil diambil', 'data' => $songs], 200);
+        return response()->json(['message' => 'Song data retrieved successfully', 'data' => $songs], 200);
     }
 
     public function store(Request $request)
@@ -25,11 +25,11 @@ class SongController extends Controller
             'id_album' => 'nullable|string|exists:album,id_album',
             'audio_url' => 'required|string',
 
-            // Wajib ada artis yang menyanyikan (array)
+            // Required: artists who perform the song (array)
             'artist_ids' => 'required|array|min:1',
             'artist_ids.*' => 'exists:artist,id_artist',
 
-            // Opsional: Jika lagu langsung dimasukkan ke playlist saat dibuat
+            // Optional: If song is directly added to a playlist on creation
             'playlist_ids' => 'nullable|array',
             'playlist_ids.*' => 'exists:playlist,id_playlist'
         ]);
@@ -42,36 +42,36 @@ class SongController extends Controller
             'audio_url' => $validated['audio_url']
         ];
 
-        // 1. Simpan data lagu
+        // 1. Save song data
         $song = Song::create($songData);
 
-        // 2. Simpan relasi pembuat lagu ke tabel pivot song_artist
+        // 2. Save song creator relation to song_artist pivot table
         $song->artists()->attach($validated['artist_ids']);
 
-        // 3. (Opsional) Simpan relasi ke tabel pivot playlist_song jika ada
+        // 3. (Optional) Save relation to playlist_song pivot table if provided
         if (!empty($validated['playlist_ids'])) {
             $song->playlists()->attach($validated['playlist_ids']);
         }
 
-        // Load relasi agar respons ke Next.js langsung lengkap
+        // Load relations so the response to Next.js is complete
         $song->load(['album', 'artists']);
 
-        return response()->json(['message' => 'Lagu berhasil ditambahkan', 'data' => $song], 201);
+        return response()->json(['message' => 'Song added successfully', 'data' => $song], 201);
     }
 
     public function show($id)
     {
-        // Menampilkan lagu super lengkap (artis, album, dan ada di playlist mana saja)
+        // Display complete song data (artists, album, and which playlists it's in)
         $song = Song::with(['album', 'artists', 'playlists'])->where('id_song', $id)->first();
-        if (!$song) return response()->json(['message' => 'Lagu tidak ditemukan'], 404);
+        if (!$song) return response()->json(['message' => 'Song not found'], 404);
 
-        return response()->json(['message' => 'Detail lagu', 'data' => $song], 200);
+        return response()->json(['message' => 'Song detail', 'data' => $song], 200);
     }
 
     public function update(Request $request, $id)
     {
         $song = Song::where('id_song', $id)->first();
-        if (!$song) return response()->json(['message' => 'Lagu tidak ditemukan'], 404);
+        if (!$song) return response()->json(['message' => 'Song not found'], 404);
 
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:150',
@@ -84,55 +84,55 @@ class SongController extends Controller
             'playlist_ids.*' => 'exists:playlist,id_playlist'
         ]);
 
-        // Update data inti
+        // Update core data
         $song->update($request->only(['title', 'duration', 'id_album', 'audio_url']));
 
-        // Sinkronisasi pivot artis jika frontend mengirim array artist_ids baru
+        // Sync artist pivot if frontend sends new artist_ids array
         if ($request->has('artist_ids')) {
             $song->artists()->sync($validated['artist_ids']);
         }
 
-        // Sinkronisasi pivot playlist jika frontend mengirim array playlist_ids baru
+        // Sync playlist pivot if frontend sends new playlist_ids array
         if ($request->has('playlist_ids')) {
             $song->playlists()->sync($validated['playlist_ids']);
         }
 
         $song->load(['album', 'artists']);
-        return response()->json(['message' => 'Lagu berhasil diupdate', 'data' => $song], 200);
+        return response()->json(['message' => 'Song updated successfully', 'data' => $song], 200);
     }
 
     public function destroy($id)
     {
         $song = Song::where('id_song', $id)->first();
         if (!$song) {
-            return response()->json(['message' => 'Lagu tidak ditemukan'], 404);
+            return response()->json(['message' => 'Song not found'], 404);
         }
 
         // ==========================================
-        // PROSES CASCADE DELETE MANUAL
+        // MANUAL CASCADE DELETE PROCESS
         // ==========================================
 
-        // 1. Putus relasi dengan artist (tabel song_artist)
+        // 1. Detach relation with artists (song_artist table)
         $song->artists()->detach();
 
-        // 2. Putus relasi dengan playlist (tabel playlist_song)
+        // 2. Detach relation with playlists (playlist_song table)
         $song->playlists()->detach();
 
-        // 3. Putus relasi dengan user yang me-like (tabel user_likedsong)
+        // 3. Detach relation with users who liked the song (user_likedsong table)
         DB::table('user_likedsong')->where('id_song', $id)->delete();
 
-        // 4. Hapus riwayat streaming lagu ini (tabel song_streaminghistory)
+        // 4. Delete streaming history for this song (song_streaminghistory table)
         DB::table('song_streaminghistory')->where('id_song', $id)->delete();
 
-        // 5. Setelah semua "akar" dibersihkan, hapus lagunya
+        // 5. After all relations are cleaned, delete the song
         $song->delete();
 
-        return response()->json(['message' => 'Lagu beserta seluruh riwayat dan relasinya berhasil dihapus'], 200);
+        return response()->json(['message' => 'Song and all its history and relations deleted successfully'], 200);
     }
 
     public function discoverWeekly()
     {
-        // PERBAIKAN: Menambahkan 'artists' agar frontend bisa menampilkan nama penyanyi
+        // FIX: Adding 'artists' so frontend can display singer names
         $topSongs = Song::with(['album', 'artists'])
             ->withCount('streamingHistories')
             ->orderBy('streaming_histories_count', 'desc')
@@ -140,7 +140,7 @@ class SongController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Discover Weekly (Top 50 Lagu)',
+            'message' => 'Discover Weekly (Top 50 Songs)',
             'data' => $topSongs
         ], 200);
     }

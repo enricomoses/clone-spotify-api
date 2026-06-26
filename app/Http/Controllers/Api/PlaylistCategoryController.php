@@ -16,7 +16,7 @@ class PlaylistCategoryController extends Controller
             $category->type = 'playlist';
             return $category;
         });
-        return response()->json(['message' => 'Data kategori playlist', 'data' => $categories], 200);
+        return response()->json(['message' => 'Playlist category data', 'data' => $categories], 200);
     }
 
     public function store(Request $request)
@@ -30,27 +30,27 @@ class PlaylistCategoryController extends Controller
         $validated['id_playlist_category'] = Str::uuid()->toString();
         $category = PlaylistCategory::create($validated);
 
-        return response()->json(['message' => 'Kategori berhasil ditambahkan', 'data' => $category], 201);
+        return response()->json(['message' => 'Category added successfully', 'data' => $category], 201);
     }
 
     public function show($id)
     {
-        // PERBAIKAN: Menggunakan where()->first() karena PK bukan 'id' default
+        // FIX: Using where()->first() because PK is not default 'id'
         $category = PlaylistCategory::with('playlists')
             ->where('id_playlist_category', $id)
             ->first();
 
-        if (!$category) return response()->json(['message' => 'Kategori tidak ditemukan'], 404);
+        if (!$category) return response()->json(['message' => 'Category not found'], 404);
         
         $category->type = 'playlist';
-        return response()->json(['message' => 'Detail kategori', 'data' => $category], 200);
+        return response()->json(['message' => 'Category detail', 'data' => $category], 200);
     }
 
     public function update(Request $request, $id)
     {
-        // PERBAIKAN: Menggunakan where()->first() karena PK bukan 'id' default
+        // FIX: Using where()->first() because PK is not default 'id'
         $category = PlaylistCategory::query()->where('id_playlist_category', $id)->first();
-        if (!$category) return response()->json(['message' => 'Kategori tidak ditemukan'], 404);
+        if (!$category) return response()->json(['message' => 'Category not found'], 404);
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:100',
@@ -59,7 +59,7 @@ class PlaylistCategoryController extends Controller
         ]);
 
         $category->update($validated);
-        return response()->json(['message' => 'Kategori berhasil diupdate', 'data' => $category], 200);
+        return response()->json(['message' => 'Category updated successfully', 'data' => $category], 200);
     }
 
     public function destroy($id)
@@ -67,21 +67,21 @@ class PlaylistCategoryController extends Controller
         $category = PlaylistCategory::query()->where('id_playlist_category', $id)->first();
 
         if (!$category) {
-            return response()->json(['message' => 'Kategori tidak ditemukan'], 404);
+            return response()->json(['message' => 'Category not found'], 404);
         }
 
         // ==========================================
-        // PROSES PEMBERSIHAN RELASI
+        // RELATIONS CLEANUP PROCESS
         // ==========================================
-        // Ubah semua playlist yang memakai kategori ini menjadi 'Tanpa Kategori' (null)
-        // Mencegah error Foreign Key Constraint dan mencegah playlist ikut terhapus
+        // Set all playlists using this category to null
+        // Prevent Foreign Key Constraint errors and prevent playlists from being deleted
         DB::table('playlist')
             ->where('id_playlist_category', $id)
             ->update(['id_playlist_category' => null]);
 
-        // Setelah relasinya dibersihkan, hapus kategori utama dengan aman
+        // Safely delete the category after relations are updated
         $category->delete();
 
-        return response()->json(['message' => 'Kategori berhasil dihapus dan playlist terkait telah disesuaikan'], 200);
+        return response()->json(['message' => 'Category deleted successfully and associated playlists have been updated'], 200);
     }
 }

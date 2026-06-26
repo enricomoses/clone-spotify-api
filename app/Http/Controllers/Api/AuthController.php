@@ -26,13 +26,13 @@ class AuthController extends Controller
         ])->where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Kredensial tidak valid'], 401);
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Login berhasil',
+            'message' => 'Login successful',
             'user' => $user,
             'access_token' => $token
         ], 200);
@@ -47,15 +47,15 @@ class AuthController extends Controller
 
         $artist = Artist::query()->where('email', $request->email)->first();
 
-        // Mengecek apakah artist ada dan password cocok (tanpa hashing)
+        // Check if artist exists and password matches (without hashing)
         if (!$artist || $artist->password !== $request->password) {
-            return response()->json(['message' => 'Kredensial artist tidak valid'], 401);
+            return response()->json(['message' => 'Invalid artist credentials'], 401);
         }
 
         $token = $artist->createToken('artist_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Login artist berhasil',
+            'message' => 'Artist login successful',
             'artist' => $artist,
             'access_token' => $token
         ], 200);

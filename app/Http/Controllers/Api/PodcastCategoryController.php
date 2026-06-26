@@ -16,7 +16,7 @@ class PodcastCategoryController extends Controller
             $category->type = 'podcast';
             return $category;
         });
-        return response()->json(['message' => 'Data kategori podcast', 'data' => $categories], 200);
+        return response()->json(['message' => 'Podcast category data', 'data' => $categories], 200);
     }
 
     public function store(Request $request)
@@ -30,22 +30,22 @@ class PodcastCategoryController extends Controller
         $validated['id_podcast_category'] = Str::uuid()->toString();
         $category = PodcastCategory::create($validated);
 
-        return response()->json(['message' => 'Kategori podcast berhasil ditambahkan', 'data' => $category], 201);
+        return response()->json(['message' => 'Podcast category added successfully', 'data' => $category], 201);
     }
 
     public function show($id)
     {
         $category = PodcastCategory::query()->with('podcasts')->where('id_podcast_category', $id)->first();
-        if (!$category) return response()->json(['message' => 'Kategori podcast tidak ditemukan'], 404);
+        if (!$category) return response()->json(['message' => 'Podcast category not found'], 404);
 
         $category->type = 'podcast';
-        return response()->json(['message' => 'Detail kategori podcast', 'data' => $category], 200);
+        return response()->json(['message' => 'Podcast category detail', 'data' => $category], 200);
     }
 
     public function update(Request $request, $id)
     {
         $category = PodcastCategory::query()->where('id_podcast_category', $id)->first();
-        if (!$category) return response()->json(['message' => 'Kategori podcast tidak ditemukan'], 404);
+        if (!$category) return response()->json(['message' => 'Podcast category not found'], 404);
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:100',
@@ -54,7 +54,7 @@ class PodcastCategoryController extends Controller
         ]);
 
         $category->update($validated);
-        return response()->json(['message' => 'Kategori podcast berhasil diupdate', 'data' => $category], 200);
+        return response()->json(['message' => 'Podcast category updated successfully', 'data' => $category], 200);
     }
 
     public function destroy($id)
@@ -62,21 +62,23 @@ class PodcastCategoryController extends Controller
         $category = PodcastCategory::query()->where('id_podcast_category', $id)->first();
 
         if (!$category) {
-            return response()->json(['message' => 'Kategori podcast tidak ditemukan'], 404);
+            {
+                return response()->json(['message' => 'Podcast category not found'], 404);
+            }
         }
 
         // ==========================================
-        // PROSES PEMBERSIHAN RELASI
+        // RELATIONS CLEANUP PROCESS
         // ==========================================
-        // Ubah semua podcast yang memakai kategori ini menjadi 'Tanpa Kategori' (null)
-        // Mencegah error Foreign Key Constraint dan mencegah podcast ikut terhapus
+        // Set all podcasts using this category to null
+        // Prevent Foreign Key Constraint errors and prevent podcasts from being deleted
         DB::table('podcast')
             ->where('id_podcast_category', $id)
             ->update(['id_podcast_category' => null]);
 
-        // Setelah relasinya dibersihkan, hapus kategori utama dengan aman
+        // Safely delete the category after relations are updated
         $category->delete();
 
-        return response()->json(['message' => 'Kategori podcast berhasil dihapus dan podcast terkait telah disesuaikan'], 200);
+        return response()->json(['message' => 'Podcast category deleted successfully and associated podcasts have been updated'], 200);
     }
 }

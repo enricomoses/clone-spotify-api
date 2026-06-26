@@ -14,7 +14,7 @@ class PlaylistController extends Controller
     public function index()
     {
         $playlists = Playlist::with(['category', 'collaborators', 'songs'])->get();
-        return response()->json(['message' => 'Data playlist', 'data' => $playlists], 200);
+        return response()->json(['message' => 'Playlist data', 'data' => $playlists], 200);
     }
 
     public function show($id)
@@ -23,9 +23,9 @@ class PlaylistController extends Controller
             ->where('id_playlist', $id)
             ->first();
 
-        if (!$playlist) return response()->json(['message' => 'Playlist tidak ditemukan'], 404);
+        if (!$playlist) return response()->json(['message' => 'Playlist not found'], 404);
 
-        return response()->json(['message' => 'Detail playlist', 'data' => $playlist], 200);
+        return response()->json(['message' => 'Playlist detail', 'data' => $playlist], 200);
     }
 
     // --- CRUD BASIC ---
@@ -49,19 +49,19 @@ class PlaylistController extends Controller
 
         $playlist = Playlist::create($playlistData);
 
-        // Otomatis buat pivot playlist_collaborator dengan role 'Owner'
+        // Automatically create playlist_collaborator pivot with role 'Owner'
         $playlist->collaborators()->attach($validated['id_user'], ['role' => 'Owner']);
         $playlist->load(['collaborators', 'songs']);
 
-        return response()->json(['message' => 'Playlist berhasil dibuat', 'data' => $playlist], 201);
+        return response()->json(['message' => 'Playlist created successfully', 'data' => $playlist], 201);
     }
 
     public function update(Request $request, $id)
     {
         $playlist = Playlist::query()->where('id_playlist', $id)->first();
-        if (!$playlist) return response()->json(['message' => 'Playlist tidak ditemukan'], 404);
+        if (!$playlist) return response()->json(['message' => 'Playlist not found'], 404);
 
-        // Validasi: hanya Owner yang boleh update playlist
+        // Validation: only Owner can update playlist
         $request->validate([
             'id_user' => 'required|string|exists:User,id_user'
         ]);
@@ -72,7 +72,7 @@ class PlaylistController extends Controller
             ->exists();
 
         if (!$isOwner) {
-            return response()->json(['message' => 'Hanya Owner yang bisa mengupdate playlist'], 403);
+            return response()->json(['message' => 'Only the Owner can update the playlist'], 403);
         }
 
         $validated = $request->validate([
@@ -84,7 +84,7 @@ class PlaylistController extends Controller
 
         $playlist->update($validated);
         $playlist->load(['collaborators', 'songs', 'category']);
-        return response()->json(['message' => 'Playlist berhasil diupdate', 'data' => $playlist], 200);
+        return response()->json(['message' => 'Playlist updated successfully', 'data' => $playlist], 200);
     }
 
     public function destroy(Request $request, $id)
@@ -92,13 +92,13 @@ class PlaylistController extends Controller
         $playlist = Playlist::query()->where('id_playlist', $id)->first();
 
         if (!$playlist) {
-            return response()->json(['message' => 'Playlist tidak ditemukan'], 404);
+            return response()->json(['message' => 'Playlist not found'], 404);
         }
 
-        // Validasi: hanya Owner yang boleh hapus playlist
+        // Validation: only Owner can delete playlist
         $idUser = $request->query('id_user') ?? $request->id_user;
         if (!$idUser) {
-            return response()->json(['message' => 'Parameter id_user diperlukan untuk validasi ownership'], 400);
+            return response()->json(['message' => 'Parameter id_user is required for ownership validation'], 400);
         }
 
         $isOwner = PlaylistCollaborator::where('id_playlist', $id)
@@ -107,62 +107,62 @@ class PlaylistController extends Controller
             ->exists();
 
         if (!$isOwner) {
-            return response()->json(['message' => 'Hanya Owner yang bisa menghapus playlist'], 403);
+            return response()->json(['message' => 'Only the Owner can delete the playlist'], 403);
         }
 
         // ==========================================
-        // PROSES CASCADE DELETE (PEMBERSIHAN RELASI)
+        // CASCADE DELETE PROCESS (RELATIONS CLEANUP)
         // ==========================================
 
-        // 1. Putus relasi dengan kolaborator / pembuat (tabel playlist_collaborator)
+        // 1. Detach relations with collaborators/creators (playlist_collaborator table)
         $playlist->collaborators()->detach();
 
-        // 2. Putus relasi dengan lagu-lagu di dalam playlist (tabel playlist_song)
+        // 2. Detach relations with songs in the playlist (playlist_song table)
         $playlist->songs()->detach();
 
-        // 3. Putus relasi dengan user yang mem-follow playlist ini (tabel user_followplaylist)
+        // 3. Detach relations with users following this playlist (user_followplaylist table)
         DB::table('user_followplaylist')->where('id_playlist', $id)->delete();
 
-        // 4. Setelah semua "akar" dibersihkan, hapus playlist utama dengan aman
+        // 4. Once all dependencies are cleaned up, safely delete the main playlist
         $playlist->delete();
 
-        return response()->json(['message' => 'Playlist beserta seluruh relasinya berhasil dihapus'], 200);
+        return response()->json(['message' => 'Playlist and all its relations deleted successfully'], 200);
     }
 
-    // --- MANAJEMEN ISI PLAYLIST ---
+    // --- PLAYLIST CONTENT MANAGEMENT ---
     public function addSong(Request $request, $id)
     {
         $playlist = Playlist::query()->where('id_playlist', $id)->first();
-        if (!$playlist) return response()->json(['message' => 'Playlist tidak ditemukan'], 404);
+        if (!$playlist) return response()->json(['message' => 'Playlist not found'], 404);
 
         $request->validate([
             'song_id' => 'required|exists:song,id_song',
             'id_user' => 'required|string|exists:User,id_user'
         ]);
 
-        // Validasi: hanya Owner atau Editor yang boleh menambah lagu
+        // Validation: only Owner or Editor can add songs
         $hasAccess = PlaylistCollaborator::where('id_playlist', $id)
             ->where('id_user', $request->id_user)
             ->whereIn('role', ['Owner', 'Editor'])
             ->exists();
 
         if (!$hasAccess) {
-            return response()->json(['message' => 'Hanya Owner atau Editor yang bisa menambah lagu ke playlist'], 403);
+            return response()->json(['message' => 'Only the Owner or Editor can add songs to the playlist'], 403);
         }
 
         $playlist->songs()->syncWithoutDetaching([$request->song_id]);
-        return response()->json(['message' => 'Lagu berhasil ditambahkan ke playlist'], 200);
+        return response()->json(['message' => 'Song added to playlist successfully'], 200);
     }
 
     public function removeSong(Request $request, $id, $song_id)
     {
         $playlist = Playlist::query()->where('id_playlist', $id)->first();
-        if (!$playlist) return response()->json(['message' => 'Playlist tidak ditemukan'], 404);
+        if (!$playlist) return response()->json(['message' => 'Playlist not found'], 404);
 
-        // Validasi: hanya Owner atau Editor yang boleh menghapus lagu
+        // Validation: only Owner or Editor can delete songs
         $idUser = $request->query('id_user') ?? $request->id_user;
         if (!$idUser) {
-            return response()->json(['message' => 'Parameter id_user diperlukan untuk validasi'], 400);
+            return response()->json(['message' => 'Parameter id_user is required for validation'], 400);
         }
 
         $hasAccess = PlaylistCollaborator::where('id_playlist', $id)
@@ -171,48 +171,48 @@ class PlaylistController extends Controller
             ->exists();
 
         if (!$hasAccess) {
-            return response()->json(['message' => 'Hanya Owner atau Editor yang bisa menghapus lagu dari playlist'], 403);
+            return response()->json(['message' => 'Only the Owner or Editor can remove songs from the playlist'], 403);
         }
 
         $playlist->songs()->detach($song_id);
-        return response()->json(['message' => 'Lagu dihapus dari playlist'], 200);
+        return response()->json(['message' => 'Song removed from playlist'], 200);
     }
 
-    // --- MANAJEMEN KOLABORATOR ---
+    // --- COLLABORATOR MANAGEMENT ---
     public function addCollaborator(Request $request, $id)
     {
         $playlist = Playlist::query()->where('id_playlist', $id)->first();
-        if (!$playlist) return response()->json(['message' => 'Playlist tidak ditemukan'], 404);
+        if (!$playlist) return response()->json(['message' => 'Playlist not found'], 404);
 
         $request->validate([
             'user_id' => 'required|exists:User,id_user',
-            'id_user' => 'required|string|exists:User,id_user' // User yang melakukan request (harus Owner)
+            'id_user' => 'required|string|exists:User,id_user' // User making the request (must be Owner)
         ]);
 
-        // Validasi: hanya Owner yang boleh menambah kolaborator
+        // Validation: only Owner can add collaborators
         $isOwner = PlaylistCollaborator::where('id_playlist', $id)
             ->where('id_user', $request->id_user)
             ->where('role', 'Owner')
             ->exists();
 
         if (!$isOwner) {
-            return response()->json(['message' => 'Hanya Owner yang bisa menambah kolaborator'], 403);
+            return response()->json(['message' => 'Only the Owner can add collaborators'], 403);
         }
 
-        // Cek apakah user yang akan ditambah sudah jadi kolaborator
+        // Check if user to be added is already a collaborator
         $alreadyCollaborator = PlaylistCollaborator::where('id_playlist', $id)
             ->where('id_user', $request->user_id)
             ->exists();
 
         if ($alreadyCollaborator) {
-            return response()->json(['message' => 'User sudah menjadi kolaborator di playlist ini'], 400);
+            return response()->json(['message' => 'User is already a collaborator in this playlist'], 400);
         }
 
-        // Kolaborator yang ditambahkan selalu mendapat role 'Editor'
+        // Added collaborator always gets 'Editor' role
         $playlist->collaborators()->attach($request->user_id, ['role' => 'Editor']);
         $playlist->load('collaborators');
 
-        return response()->json(['message' => 'Kolaborator berhasil ditambahkan dengan role Editor', 'data' => $playlist], 200);
+        return response()->json(['message' => 'Collaborator added successfully with Editor role', 'data' => $playlist], 200);
     }
 
     public function removeCollaborator(Request $request, $id, $user_id)
@@ -220,23 +220,23 @@ class PlaylistController extends Controller
         $playlist = Playlist::query()->where('id_playlist', $id)->first();
 
         if (!$playlist) {
-            return response()->json(['message' => 'Playlist tidak ditemukan'], 404);
+            return response()->json(['message' => 'Playlist not found'], 404);
         }
 
-        // Tidak boleh menghapus user yang role-nya Owner
+        // Cannot delete user whose role is Owner
         $targetRole = PlaylistCollaborator::where('id_playlist', $id)
             ->where('id_user', $user_id)
             ->first();
 
         if (!$targetRole) {
-            return response()->json(['message' => 'User bukan kolaborator di playlist ini'], 404);
+            return response()->json(['message' => 'User is not a collaborator in this playlist'], 404);
         }
 
         if ($targetRole->role === 'Owner') {
-            return response()->json(['message' => 'Tidak bisa menghapus Owner dari playlist. Hapus playlist jika ingin menghapus kepemilikan.'], 400);
+            return response()->json(['message' => 'Cannot remove the Owner from the playlist. Delete the playlist to remove ownership.'], 400);
         }
 
-        // Validasi: hanya Owner yang boleh menghapus kolaborator
+        // Validation: only Owner can remove collaborators
         $idUser = $request->query('id_user') ?? $request->id_user;
         if ($idUser) {
             $isOwner = PlaylistCollaborator::where('id_playlist', $id)
@@ -245,11 +245,11 @@ class PlaylistController extends Controller
                 ->exists();
 
             if (!$isOwner) {
-                return response()->json(['message' => 'Hanya Owner yang bisa menghapus kolaborator'], 403);
+                return response()->json(['message' => 'Only the Owner can remove collaborators'], 403);
             }
         }
 
         $playlist->collaborators()->detach($user_id);
-        return response()->json(['message' => 'Kolaborator dihapus'], 200);
+        return response()->json(['message' => 'Collaborator removed'], 200);
     }
 }

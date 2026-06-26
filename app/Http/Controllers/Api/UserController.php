@@ -15,12 +15,12 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all();
-        return response()->json(['message' => 'Data user', 'data' => $users], 200);
+        return response()->json(['message' => 'User data', 'data' => $users], 200);
     }
 
     public function store(Request $request)
     {
-        // 1. Validasi input dari frontend
+        // 1. Validate input from frontend
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:User,email',
@@ -30,18 +30,18 @@ class UserController extends Controller
             'country' => 'nullable|string'
         ]);
 
-        // 2. Generate UUID v4 secara otomatis
+        // 2. Auto-generate UUID v4
         $validated['id_user'] = Str::uuid()->toString();
 
-        // 3. Simpan ke database
+        // 3. Save to database
         $user = User::create($validated);
 
-        return response()->json(['message' => 'User berhasil dibuat', 'data' => $user], 201);
+        return response()->json(['message' => 'User created successfully', 'data' => $user], 201);
     }
 
     public function show($id)
     {
-        // PERBAIKAN: Load semua relasi penting termasuk followers, collaborativePlaylists, podcasts
+        // FIX: Load all important relations including followers, collaborativePlaylists, podcasts
         $user = User::with([
             'followedPlaylists',
             'following',
@@ -54,23 +54,23 @@ class UserController extends Controller
             'podcasts'
         ])->where('id_user', $id)->first();
 
-        if (!$user) return response()->json(['message' => 'User tidak ditemukan'], 404);
+        if (!$user) return response()->json(['message' => 'User not found'], 404);
 
-        return response()->json(['message' => 'Detail user', 'data' => $user], 200);
+        return response()->json(['message' => 'User detail', 'data' => $user], 200);
     }
 
     public function update(Request $request, $id)
     {
-        // PERBAIKAN: Menggunakan where()->first() karena PK bukan 'id' default
+        // FIX: Using where()->first() because PK is not the default 'id'
         $user = User::where('id_user', $id)->first();
         if (!$user) {
-            return response()->json(['message' => 'User tidak ditemukan'], 404);
+            return response()->json(['message' => 'User not found'], 404);
         }
 
-        // CONSTRAINT / VALIDASI ATURAN BISNIS SAAT UPDATE
+        // CONSTRAINT / BUSINESS RULE VALIDATION ON UPDATE
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:100',
-            'birthday' => 'nullable|date|before:today', // Constraint: Tanggal lahir harus sebelum hari ini
+            'birthday' => 'nullable|date|before:today', // Constraint: Birthday must be before today
             'gender' => 'nullable|string',
             'country' => 'nullable|string',
             'profile_picture' => 'nullable|string',
@@ -79,7 +79,7 @@ class UserController extends Controller
                 'string',
                 function ($attribute, $value, $fail) use ($user) {
                     if ($value && !Hash::check($value, $user->password)) {
-                        $fail('Password lama tidak sesuai.');
+                        $fail('Current password is incorrect.');
                     }
                 }
             ],
@@ -90,52 +90,52 @@ class UserController extends Controller
                 'min:6',
                 function ($attribute, $value, $fail) use ($user) {
                     if ($value && Hash::check($value, $user->password)) {
-                        $fail('Password baru tidak boleh sama dengan password lama.');
+                        $fail('New password cannot be the same as the current password.');
                     }
                 }
             ]
         ]);
 
-        // Hapus current_password agar tidak ikut dimasukkan ke update query database
+        // Remove current_password so it is not included in the database update query
         unset($validated['current_password']);
 
         $user->update($validated);
-        return response()->json(['message' => 'User berhasil diupdate', 'data' => $user], 200);
+        return response()->json(['message' => 'User updated successfully', 'data' => $user], 200);
     }
 
     public function destroy($id)
     {
-        // PERBAIKAN: Menggunakan where()->first() karena PK bukan 'id' default
+        // FIX: Using where()->first() because PK is not the default 'id'
         $user = User::where('id_user', $id)->first();
         if (!$user) {
-            return response()->json(['message' => 'User tidak ditemukan'], 404);
+            return response()->json(['message' => 'User not found'], 404);
         }
 
         // ==========================================
-        // PROSES CASCADE DELETE (PEMBERSIHAN RELASI)
+        // CASCADE DELETE PROCESS (RELATION CLEANUP)
         // ==========================================
 
-        // 1. Hapus riwayat streaming
+        // 1. Delete streaming history
         DB::table('song_streaminghistory')->where('id_user', $id)->delete();
         DB::table('episode_streaminghistory')->where('id_user', $id)->delete();
 
-        // 2. Hapus data sosial (Like & Follow)
+        // 2. Delete social data (Like & Follow)
         DB::table('user_likedsong')->where('id_user', $id)->delete();
         DB::table('user_followartist')->where('id_user', $id)->delete();
         DB::table('user_followplaylist')->where('id_user', $id)->delete();
         DB::table('user_followpodcast')->where('id_user', $id)->delete();
 
-        // 3. Hapus relasi follow antar user (baik sebagai follower maupun followed)
+        // 3. Delete follow relations between users (both as follower and followed)
         DB::table('user_followuser')->where('follower_id', $id)->orWhere('followed_id', $id)->delete();
 
-        // 4. Handle playlist yang dimiliki user ini
-        //    - Jika user adalah Owner → hapus playlist beserta relasinya
-        //    - Jika user adalah Editor → cukup hapus dari collaborator
+        // 4. Handle playlists owned by this user
+        //    - If user is Owner → delete playlist along with its relations
+        //    - If user is Editor → just remove from collaborator
         $collaborations = DB::table('playlist_collaborator')->where('id_user', $id)->get();
 
         foreach ($collaborations as $collab) {
             if ($collab->role === 'Owner') {
-                // User ini adalah Owner playlist → hapus playlist beserta semua relasinya
+                // This user is the playlist Owner → delete playlist along with all its relations
                 $playlist = Playlist::where('id_playlist', $collab->id_playlist)->first();
                 if ($playlist) {
                     $playlist->collaborators()->detach();
@@ -146,29 +146,29 @@ class UserController extends Controller
             }
         }
 
-        // Hapus sisa entri collaborator (untuk playlist dimana user hanya Editor)
+        // Delete remaining collaborator entries (for playlists where user was only Editor)
         DB::table('playlist_collaborator')->where('id_user', $id)->delete();
 
-        // 5. Handle Podcast buatan user ini
-        //    Karena di ERD podcast dibuat oleh user (mandatory FK), hapus podcast beserta relasinya
+        // 5. Handle Podcasts created by this user
+        //    Since in ERD podcast is created by user (mandatory FK), delete podcast along with its relations
         $podcasts = DB::table('podcast')->where('id_user', $id)->pluck('id_podcast');
         foreach ($podcasts as $podcastId) {
-            // Hapus followers podcast
+            // Delete podcast followers
             DB::table('user_followpodcast')->where('id_podcast', $podcastId)->delete();
 
-            // Hapus episode beserta streaming history-nya
+            // Delete episodes along with their streaming history
             $episodes = DB::table('episode')->where('id_podcast', $podcastId)->pluck('id_episode');
             if ($episodes->isNotEmpty()) {
                 DB::table('episode_streaminghistory')->whereIn('id_episode', $episodes)->delete();
                 DB::table('episode')->where('id_podcast', $podcastId)->delete();
             }
 
-            // Hapus podcast
+            // Delete podcast
             DB::table('podcast')->where('id_podcast', $podcastId)->delete();
         }
 
-        // 6. Hapus user utama
+        // 6. Delete the main user
         $user->delete();
-        return response()->json(['message' => 'User berhasil dihapus beserta seluruh datanya'], 200);
+        return response()->json(['message' => 'User and all associated data deleted successfully'], 200);
     }
 }

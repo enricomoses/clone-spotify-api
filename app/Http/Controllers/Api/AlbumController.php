@@ -13,12 +13,12 @@ class AlbumController extends Controller
     public function index()
     {
         $albums = Album::with('artists', 'songs.artists')->get();
-        return response()->json(['message' => 'Data album', 'data' => $albums], 200);
+        return response()->json(['message' => 'Album data', 'data' => $albums], 200);
     }
 
     public function store(Request $request)
     {
-        // PERBAIKAN: Menambahkan validasi array artist_ids wajib dari frontend
+        // FIX: Adding required artist_ids array validation from frontend
         $validated = $request->validate([
             'title' => 'required|string|max:150',
             'release' => 'required|date',
@@ -34,31 +34,31 @@ class AlbumController extends Controller
             'cover_image' => $validated['cover_image'] ?? null,
         ];
 
-        // 1. Simpan data ke tabel album
+        // 1. Save data to album table
         $album = Album::create($albumData);
 
-        // 2. Simpan relasi Many-to-Many ke tabel pivot artist_album
+        // 2. Save Many-to-Many relation to artist_album pivot table
         $album->artists()->attach($validated['artist_ids']);
 
-        // 3. Load relasi agar data yang dikirim balik ke Next.js langsung lengkap
+        // 3. Load relations so the response to Next.js is fully populated
         $album->load('artists', 'songs.artists');
 
-        return response()->json(['message' => 'Album berhasil ditambahkan', 'data' => $album], 201);
+        return response()->json(['message' => 'Album added successfully', 'data' => $album], 201);
     }
 
     public function show($id)
     {
-        // PERBAIKAN: Menggunakan where()->first() agar aman dari alarm false-positive Intelephense
+        // FIX: Using where()->first() to prevent Intelephense false-positive warning
         $album = Album::with('artists', 'songs.artists')->where('id_album', $id)->first();
 
-        if (!$album) return response()->json(['message' => 'Album tidak ditemukan'], 404);
-        return response()->json(['message' => 'Detail album', 'data' => $album], 200);
+        if (!$album) return response()->json(['message' => 'Album not found'], 404);
+        return response()->json(['message' => 'Album detail', 'data' => $album], 200);
     }
 
     public function update(Request $request, $id)
     {
         $album = Album::query()->where('id_album', $id)->first();
-        if (!$album) return response()->json(['message' => 'Album tidak ditemukan'], 404);
+        if (!$album) return response()->json(['message' => 'Album not found'], 404);
 
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:150',
@@ -68,62 +68,62 @@ class AlbumController extends Controller
             'artist_ids.*' => 'exists:artist,id_artist'
         ]);
 
-        // Update data dasar album
+        // Update basic album data
         $album->update($request->only(['title', 'release', 'cover_image']));
 
-        // PERBAIKAN: Sinkronisasi data tabel pivot jika frontend mengirimkan array artist_ids yang baru
+        // FIX: Synchronize pivot table data if frontend sends new artist_ids array
         if ($request->has('artist_ids')) {
             $album->artists()->sync($validated['artist_ids']);
         }
 
         $album->load('artists', 'songs.artists');
-        return response()->json(['message' => 'Album berhasil diupdate', 'data' => $album], 200);
+        return response()->json(['message' => 'Album updated successfully', 'data' => $album], 200);
     }
 
     public function destroy($id)
     {
         $album = Album::query()->where('id_album', $id)->first();
         if (!$album) {
-            return response()->json(['message' => 'Album tidak ditemukan'], 404);
+            return response()->json(['message' => 'Album not found'], 404);
         }
 
-        // PERBAIKAN: Putus relasi di tabel pivot artist_album terlebih dahulu agar tidak menyisakan data sampah
+        // FIX: Detach relations in artist_album pivot table first to avoid orphaned data
         $album->artists()->detach();
 
         DB::table('song')->where('id_album', $id)->update(['id_album' => null]);
 
-        // Hapus data album utama
+        // Delete main album data
         $album->delete();
 
-        return response()->json(['message' => 'Album berhasil dihapus'], 200);
+        return response()->json(['message' => 'Album deleted successfully'], 200);
     }
 
-    // --- MANAJEMEN ARTIS PADA ALBUM SECARA MANUAL (ENDPOINT TAMBAHAN) ---
+    // --- MANUAL ARTIST MANAGEMENT ON ALBUM (ADDITIONAL ENDPOINTS) ---
     public function addArtist(Request $request, $id)
     {
         $album = Album::query()->where('id_album', $id)->first();
-        if (!$album) return response()->json(['message' => 'Album tidak ditemukan'], 404);
+        if (!$album) return response()->json(['message' => 'Album not found'], 404);
 
         $request->validate(['artist_id' => 'required|exists:artist,id_artist']);
 
         $album->artists()->syncWithoutDetaching([$request->artist_id]);
-        return response()->json(['message' => 'Artis berhasil ditambahkan ke album'], 200);
+        return response()->json(['message' => 'Artist added to album successfully'], 200);
     }
 
     public function removeArtist($id, $artist_id)
     {
         $album = Album::query()->where('id_album', $id)->first();
-        if (!$album) return response()->json(['message' => 'Album tidak ditemukan'], 404);
+        if (!$album) return response()->json(['message' => 'Album not found'], 404);
 
-        // Cek agar album tidak menjadi 0 artist (minimal 1 artist harus dimiliki album)
+        // Check that album does not end up with 0 artists (at least 1 artist is required)
         $currentArtistCount = $album->artists()->count();
         if ($currentArtistCount <= 1) {
             return response()->json([
-                'message' => 'Tidak bisa menghapus artis terakhir dari album. Album harus punya minimal 1 artist.'
+                'message' => 'Cannot remove the last artist from the album. Album must have at least 1 artist.'
             ], 400);
         }
 
         $album->artists()->detach($artist_id);
-        return response()->json(['message' => 'Artis dihapus dari album'], 200);
+        return response()->json(['message' => 'Artist removed from album'], 200);
     }
 }

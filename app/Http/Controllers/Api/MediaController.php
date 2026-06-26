@@ -9,7 +9,7 @@ use Cloudinary\Cloudinary;
 class MediaController extends Controller
 {
     /**
-     * Inisialisasi Instance Cloudinary
+     * Initialize Cloudinary Instance
      */
     private function getCloudinary()
     {
@@ -17,7 +17,7 @@ class MediaController extends Controller
     }
 
     // ==========================================
-    // BAGIAN 1: MANAJEMEN GAMBAR (IMAGE)
+    // PART 1: IMAGE MANAGEMENT
     // ==========================================
 
     public function uploadImage(Request $request)
@@ -36,12 +36,12 @@ class MediaController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Gambar berhasil diunggah',
+                'message' => 'Image uploaded successfully',
                 'secure_url' => $response['secure_url'],
                 'public_id' => $response['public_id']
             ], 201);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Gagal mengunggah gambar: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to upload image: ' . $e->getMessage()], 500);
         }
     }
 
@@ -55,20 +55,20 @@ class MediaController extends Controller
             $publicId = $this->extractPublicId($request->image_url);
 
             $cloudinary = $this->getCloudinary();
-            // Default resource_type untuk destroy adalah 'image'
+            // Default resource_type for destroy is 'image'
             $cloudinary->uploadApi()->destroy($publicId);
 
             return response()->json([
-                'message' => 'Gambar berhasil dihapus',
+                'message' => 'Image deleted successfully',
                 'deleted_public_id' => $publicId
             ], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Gagal menghapus gambar: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to delete image: ' . $e->getMessage()], 500);
         }
     }
 
     // ==========================================
-    // BAGIAN 2: MANAJEMEN AUDIO (SONG/EPISODE)
+    // PART 2: AUDIO MANAGEMENT (SONG/EPISODE)
     // ==========================================
 
     public function uploadAudio(Request $request)
@@ -82,22 +82,22 @@ class MediaController extends Controller
             $folder = $request->folder ? 'spotify-clone/audio/' . $request->folder : 'spotify-clone/audio';
             $cloudinary = $this->getCloudinary();
 
-            // Upload dengan parameter optimasi kualitas dan bitrate
+            // Upload with quality and bitrate optimization parameters
             $response = $cloudinary->uploadApi()->upload($request->file('audio')->getRealPath(), [
                 'folder' => $folder,
-                'resource_type' => 'video', // WAJIB 'video' untuk file audio di Cloudinary
+                'resource_type' => 'video', // REQUIRED to be 'video' for audio files on Cloudinary
                 'quality' => 'auto',
-                'bitrate' => '64k'          // Hemat bandwidth
+                'bitrate' => '64k'          // Save bandwidth
             ]);
 
             return response()->json([
-                'message' => 'Audio berhasil diunggah dan dioptimasi',
+                'message' => 'Audio uploaded and optimized successfully',
                 'secure_url' => $response['secure_url'],
                 'public_id' => $response['public_id'],
-                'duration' => $response['duration'] ?? 0 // Cloudinary otomatis menghitung durasi audio (dalam detik)
+                'duration' => $response['duration'] ?? 0 // Cloudinary automatically calculates audio duration (in seconds)
             ], 201);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Gagal mengunggah audio: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to upload audio: ' . $e->getMessage()], 500);
         }
     }
 
@@ -112,27 +112,27 @@ class MediaController extends Controller
 
             $cloudinary = $this->getCloudinary();
 
-            // PENTING: Wajib menyertakan resource_type => 'video' saat menghapus audio
+            // IMPORTANT: Required to include resource_type => 'video' when deleting audio
             $cloudinary->uploadApi()->destroy($publicId, [
                 'resource_type' => 'video'
             ]);
 
             return response()->json([
-                'message' => 'Audio berhasil dihapus dari penyimpanan',
+                'message' => 'Audio deleted successfully from storage',
                 'deleted_public_id' => $publicId
             ], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Gagal menghapus audio: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to delete audio: ' . $e->getMessage()], 500);
         }
     }
 
     // ==========================================
-    // BAGIAN 3: MANAJEMEN VIDEO (PODCAST)
+    // PART 3: VIDEO MANAGEMENT (PODCAST)
     // ==========================================
 
     public function uploadVideo(Request $request)
     {
-        // Validasi ekstensi video umum, batas tetap 4MB menyesuaikan Vercel
+        // Validate common video extensions, limit stays at 4MB to adjust to Vercel
         $request->validate([
             'video' => 'required|file|extensions:mp4,mov,avi,webm,mkv|max:4096',
             'folder' => 'nullable|string'
@@ -142,24 +142,24 @@ class MediaController extends Controller
             $folder = $request->folder ? 'spotify-clone/video/' . $request->folder : 'spotify-clone/video';
             $cloudinary = $this->getCloudinary();
 
-            // Upload dengan parameter kompresi video tingkat tinggi (Extreme Optimization)
+            // Upload with high-level video compression parameters (Extreme Optimization)
             $response = $cloudinary->uploadApi()->upload($request->file('video')->getRealPath(), [
                 'folder' => $folder,
-                'resource_type' => 'video', // Cloudinary menggunakan 'video' untuk audio maupun video
-                'quality' => 'auto:eco',    // Kompresi kualitas paling agresif/hemat
-                'width' => 640,             // Scale down/turunkan resolusi maksimal ke lebar 640px (480p)
+                'resource_type' => 'video', // Cloudinary uses 'video' for both audio and video
+                'quality' => 'auto:eco',    // Most aggressive/eco quality compression
+                'width' => 640,             // Scale down max resolution to 640px width (480p)
                 'crop' => 'scale',
-                'audio_codec' => 'aac'      // Standarisasi codec audio agar ringan
+                'audio_codec' => 'aac'      // Standardize audio codec to keep it lightweight
             ]);
 
             return response()->json([
-                'message' => 'Video berhasil diunggah dan dikompresi maksimal',
+                'message' => 'Video uploaded and fully compressed successfully',
                 'secure_url' => $response['secure_url'],
                 'public_id' => $response['public_id'],
-                'duration' => $response['duration'] ?? 0 // Durasi video dalam detik
+                'duration' => $response['duration'] ?? 0 // Video duration in seconds
             ], 201);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Gagal mengunggah video: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to upload video: ' . $e->getMessage()], 500);
         }
     }
 
@@ -174,42 +174,42 @@ class MediaController extends Controller
 
             $cloudinary = $this->getCloudinary();
 
-            // Logika penghapusan video sama persis dengan audio (resource_type => 'video')
+            // Video deletion logic is exactly the same as audio (resource_type => 'video')
             $cloudinary->uploadApi()->destroy($publicId, [
                 'resource_type' => 'video'
             ]);
 
             return response()->json([
-                'message' => 'Video podcast berhasil dihapus dari penyimpanan',
+                'message' => 'Podcast video deleted successfully from storage',
                 'deleted_public_id' => $publicId
             ], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Gagal menghapus video: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to delete video: ' . $e->getMessage()], 500);
         }
     }
 
     // ==========================================
-    // FUNGSI HELPER
+    // HELPER FUNCTIONS
     // ==========================================
 
     /**
-     * Mengekstrak Public ID murni dari URL Cloudinary
+     * Extracts pure Public ID from Cloudinary URL
      */
     private function extractPublicId($url)
     {
         $pathParts = explode('/upload/', $url);
         if (count($pathParts) < 2) {
-            throw new \Exception('URL tidak valid untuk Cloudinary');
+            throw new \Exception('Invalid URL for Cloudinary');
         }
 
         $pathAfterUpload = $pathParts[1];
 
-        // Hapus versi URL (contoh: v1234567890/)
+        // Remove URL version (e.g.: v1234567890/)
         if (preg_match('/^v\d+\//', $pathAfterUpload)) {
             $pathAfterUpload = preg_replace('/^v\d+\//', '', $pathAfterUpload);
         }
 
-        // Hapus ekstensi file
+        // Remove file extension
         return substr($pathAfterUpload, 0, strrpos($pathAfterUpload, '.'));
     }
 }

@@ -13,9 +13,9 @@ class ArtistController extends Controller
 {
     public function index()
     {
-        // Menampilkan data artis lengkap dengan semua relasinya
+        // Display artist data complete with all their relations
         $artists = Artist::with(['albums', 'songs.album', 'songs.artists', 'concerts', 'galleries'])->get();
-        return response()->json(['message' => 'Data artist', 'data' => $artists], 200);
+        return response()->json(['message' => 'Artist data', 'data' => $artists], 200);
     }
 
     public function show($id)
@@ -24,9 +24,9 @@ class ArtistController extends Controller
             ->where('id_artist', $id)
             ->first();
 
-        if (!$artist) return response()->json(['message' => 'Artist tidak ditemukan'], 404);
+        if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
 
-        return response()->json(['message' => 'Detail artist', 'data' => $artist], 200);
+        return response()->json(['message' => 'Artist detail', 'data' => $artist], 200);
     }
 
     public function store(Request $request)
@@ -47,18 +47,18 @@ class ArtistController extends Controller
 
         $artist = Artist::create($validated);
 
-        return response()->json(['message' => 'Artist berhasil didaftarkan', 'data' => $artist], 201);
+        return response()->json(['message' => 'Artist registered successfully', 'data' => $artist], 201);
     }
 
     public function update(Request $request, $id)
     {
         $artist = Artist::query()->where('id_artist', $id)->first();
         if (!$artist) {
-            return response()->json(['message' => 'Artist tidak ditemukan'], 404);
+            return response()->json(['message' => 'Artist not found'], 404);
         }
 
-        // Validasi disesuaikan dengan struktur ERD Anda
-        // Menggunakan unique dengan pengecualian ID agar email yang sama tidak error saat update profil sendiri
+        // Validation tailored to your ERD structure
+        // Using unique with ID exception so updating own profile with same email doesn't trigger error
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:150',
             'email' => 'sometimes|required|email|unique:artist,email,' . $id . ',id_artist',
@@ -73,30 +73,30 @@ class ArtistController extends Controller
 
         $artist->update($validated);
 
-        return response()->json(['message' => 'Data artist berhasil diupdate', 'data' => $artist], 200);
+        return response()->json(['message' => 'Artist data updated successfully', 'data' => $artist], 200);
     }
 
     public function destroy($id)
     {
         $artist = Artist::query()->where('id_artist', $id)->first();
         if (!$artist) {
-            return response()->json(['message' => 'Artist tidak ditemukan'], 404);
+            return response()->json(['message' => 'Artist not found'], 404);
         }
 
         // ==========================================
-        // PROSES CASCADE DELETE (PEMBERSIHAN RELASI)
+        // CASCADE DELETE PROCESS (RELATIONS CLEANUP)
         // ==========================================
 
-        // 1. Cari song yang HANYA dimiliki artist ini (tidak ada artist lain)
-        //    Jika song hanya punya 1 artist (artist ini), maka song harus dihapus
-        //    karena menurut ERD song PASTI dimiliki minimal 1 artist
+        // 1. Find songs that ONLY belong to this artist (no other artists)
+        //    If the song only has 1 artist (this artist), the song must be deleted
+        //    because according to ERD a song MUST be owned by at least 1 artist
         $songIds = DB::table('song_artist')->where('id_artist', $id)->pluck('id_song');
 
         foreach ($songIds as $songId) {
             $artistCount = DB::table('song_artist')->where('id_song', $songId)->count();
 
             if ($artistCount <= 1) {
-                // Song ini hanya dimiliki artist ini → hapus song beserta relasinya
+                // This song is only owned by this artist -> delete song along with its relations
                 $song = Song::where('id_song', $songId)->first();
                 if ($song) {
                     $song->artists()->detach();
@@ -108,91 +108,91 @@ class ArtistController extends Controller
             }
         }
 
-        // 2. Putus relasi song_artist untuk song yang masih punya artist lain
+        // 2. Detach song_artist relation for songs that still have other artists
         $artist->songs()->detach();
 
-        // 3. Putus relasi album (tabel artist_album) — album tidak dihapus karena bisa milik artist lain
+        // 3. Detach album relation (artist_album table) - album is not deleted because it can belong to other artists
         $artist->albums()->detach();
 
-        // 4. Putus relasi concert (tabel artist_concert) — concert tidak dihapus karena bisa milik artist lain
+        // 4. Detach concert relation (artist_concert table) - concert is not deleted because it can belong to other artists
         $artist->concerts()->detach();
 
-        // 5. Hapus gallery (tabel artist_gallery) — gallery mandatory milik 1 artist, jadi ikut dihapus
+        // 5. Delete gallery (artist_gallery table) - gallery belongs to 1 artist, so delete it
         DB::table('artist_gallery')->where('id_artist', $id)->delete();
 
-        // 6. Hapus semua follower (tabel user_followartist)
+        // 6. Delete all followers (user_followartist table)
         DB::table('user_followartist')->where('id_artist', $id)->delete();
 
-        // 7. Hapus artist utama
+        // 7. Delete main artist data
         $artist->delete();
 
-        return response()->json(['message' => 'Artist beserta seluruh relasinya berhasil dihapus'], 200);
+        return response()->json(['message' => 'Artist and all related data deleted successfully'], 200);
     }
 
-    // --- MANAJEMEN RELASI DARI SISI ARTIS ---
+    // --- RELATION MANAGEMENT FROM ARTIST SIDE ---
 
     public function addAlbumToArtist(Request $request, $id)
     {
         $artist = Artist::query()->where('id_artist', $id)->first();
-        if (!$artist) return response()->json(['message' => 'Artist tidak ditemukan'], 404);
+        if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
 
         $request->validate(['album_id' => 'required|exists:album,id_album']);
 
         $artist->albums()->syncWithoutDetaching([$request->album_id]);
-        return response()->json(['message' => 'Album berhasil ditambahkan ke profil artis'], 200);
+        return response()->json(['message' => 'Album added to artist profile successfully'], 200);
     }
 
     public function removeAlbumFromArtist($id, $album_id)
     {
         $artist = Artist::query()->where('id_artist', $id)->first();
-        if (!$artist) return response()->json(['message' => 'Artist tidak ditemukan'], 404);
+        if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
 
         $artist->albums()->detach($album_id);
-        return response()->json(['message' => 'Album dihapus dari profil artis'], 200);
+        return response()->json(['message' => 'Album removed from artist profile'], 200);
     }
 
     public function addSongToArtist(Request $request, $id)
     {
         $artist = Artist::query()->where('id_artist', $id)->first();
-        if (!$artist) return response()->json(['message' => 'Artist tidak ditemukan'], 404);
+        if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
 
         $request->validate(['song_id' => 'required|exists:song,id_song']);
 
         $artist->songs()->syncWithoutDetaching([$request->song_id]);
-        return response()->json(['message' => 'Lagu berhasil ditambahkan ke profil artis'], 200);
+        return response()->json(['message' => 'Song added to artist profile successfully'], 200);
     }
 
     public function removeSongFromArtist($id, $song_id)
     {
         $artist = Artist::query()->where('id_artist', $id)->first();
-        if (!$artist) return response()->json(['message' => 'Artist tidak ditemukan'], 404);
+        if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
 
-        // Cek apakah song masih punya artist lain setelah detach
+        // Check if song still has other artists after detach
         $artistCount = DB::table('song_artist')->where('id_song', $song_id)->count();
         if ($artistCount <= 1) {
             return response()->json([
-                'message' => 'Tidak bisa menghapus artis terakhir dari lagu. Song harus punya minimal 1 artist.'
+                'message' => 'Cannot remove the last artist from the song. Song must have at least 1 artist.'
             ], 400);
         }
 
         $artist->songs()->detach($song_id);
-        return response()->json(['message' => 'Lagu dihapus dari profil artis'], 200);
+        return response()->json(['message' => 'Song removed from artist profile'], 200);
     }
 
-    // --- FITUR KONSER ---
+    // --- CONCERT FEATURE ---
     public function getConcerts($id)
     {
         $artist = Artist::with('concerts')->where('id_artist', $id)->first();
-        if (!$artist) return response()->json(['message' => 'Artis tidak ditemukan'], 404);
+        if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
 
         return response()->json(['data' => $artist->concerts], 200);
     }
 
-    // --- FITUR GALERI ---
+    // --- GALLERY FEATURE ---
     public function getGallery($id)
     {
         $artist = Artist::with('galleries')->where('id_artist', $id)->first();
-        if (!$artist) return response()->json(['message' => 'Artist tidak ditemukan'], 404);
+        if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
 
         return response()->json(['data' => $artist->galleries], 200);
     }
@@ -200,7 +200,7 @@ class ArtistController extends Controller
     public function addGallery(Request $request, $id)
     {
         $artist = Artist::query()->where('id_artist', $id)->first();
-        if (!$artist) return response()->json(['message' => 'Artist tidak ditemukan'], 404);
+        if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
 
         $validated = $request->validate([
             'image_url' => 'required|string',
@@ -213,7 +213,7 @@ class ArtistController extends Controller
 
         $gallery = \App\Models\ArtistGallery::create($validated);
 
-        return response()->json(['message' => 'Foto galeri ditambahkan', 'data' => $gallery], 201);
+        return response()->json(['message' => 'Gallery photo added successfully', 'data' => $gallery], 201);
     }
 
     public function removeGallery($id, $gallery_id)
@@ -224,29 +224,29 @@ class ArtistController extends Controller
             ->delete();
 
         if (!$deleted) {
-            return response()->json(['message' => 'Foto galeri tidak ditemukan'], 404);
+            return response()->json(['message' => 'Gallery photo not found'], 404);
         }
 
-        return response()->json(['message' => 'Foto galeri dihapus'], 200);
+        return response()->json(['message' => 'Gallery photo deleted successfully'], 200);
     }
 
     public function addConcertToArtist(Request $request, $id)
     {
         $artist = Artist::query()->where('id_artist', $id)->first();
-        if (!$artist) return response()->json(['message' => 'Artist tidak ditemukan'], 404);
+        if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
 
         $request->validate(['concert_id' => 'required|exists:concert,id_concert']);
 
         $artist->concerts()->syncWithoutDetaching([$request->concert_id]);
-        return response()->json(['message' => 'Konser berhasil ditambahkan ke profil artis'], 200);
+        return response()->json(['message' => 'Concert added to artist profile successfully'], 200);
     }
 
     public function removeConcertFromArtist($id, $concert_id)
     {
         $artist = Artist::query()->where('id_artist', $id)->first();
-        if (!$artist) return response()->json(['message' => 'Artist tidak ditemukan'], 404);
+        if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
 
         $artist->concerts()->detach($concert_id);
-        return response()->json(['message' => 'Konser dihapus dari profil artis'], 200);
+        return response()->json(['message' => 'Concert removed from artist profile'], 200);
     }
 }

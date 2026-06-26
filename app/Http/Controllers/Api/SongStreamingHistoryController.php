@@ -12,10 +12,10 @@ class SongStreamingHistoryController extends Controller
     public function index()
     {
         $history = SongStreamingHistory::with(['user', 'song'])->orderBy('played_at', 'desc')->get();
-        return response()->json(['message' => 'Riwayat streaming lagu berhasil diambil', 'data' => $history], 200);
+        return response()->json(['message' => 'Song streaming history retrieved successfully', 'data' => $history], 200);
     }
 
-    // --- LOGIKA SAAT TOMBOL PLAY DITEKAN ---
+    // --- LOGIC WHEN PLAY BUTTON IS PRESSED ---
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -24,49 +24,49 @@ class SongStreamingHistoryController extends Controller
         ]);
 
         $validated['id_stream'] = Str::uuid()->toString();
-        $validated['played_at'] = now(); // Otomatis catat waktu server saat ini
-        $validated['play_duration'] = null; // Kosongkan dulu karena lagu baru mulai
+        $validated['played_at'] = now(); // Automatically record current server time
+        $validated['play_duration'] = null; // Leave empty because song just started
 
         $stream = SongStreamingHistory::create($validated);
 
-        // PENTING: Frontend wajib menyimpan 'id_stream' yang dikembalikan ini
-        // untuk digunakan saat mengirim update durasi (pause/selesai)
-        return response()->json(['message' => 'Lagu mulai diputar', 'data' => $stream], 201);
+        // IMPORTANT: Frontend must save the returned 'id_stream'
+        // to be used when sending duration updates (pause/finished)
+        return response()->json(['message' => 'Song playback started', 'data' => $stream], 201);
     }
 
     public function show($id)
     {
         $stream = SongStreamingHistory::with(['user', 'song'])->where('id_stream', $id)->first();
-        if (!$stream) return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+        if (!$stream) return response()->json(['message' => 'Stream record not found'], 404);
 
-        return response()->json(['message' => 'Detail transaksi lagu', 'data' => $stream], 200);
+        return response()->json(['message' => 'Song stream detail', 'data' => $stream], 200);
     }
 
-    // --- LOGIKA SAAT TOMBOL PAUSE DITEKAN ATAU LAGU SELESAI ---
+    // --- LOGIC WHEN PAUSE IS PRESSED OR SONG FINISHES ---
     public function update(Request $request, $id)
     {
         $stream = SongStreamingHistory::query()->where('id_stream', $id)->first();
-        if (!$stream) return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+        if (!$stream) return response()->json(['message' => 'Transaction not found'], 404);
 
-        // Frontend hanya perlu mengirimkan durasi (dalam detik)
+        // Frontend only needs to send the duration (in seconds)
         $validated = $request->validate([
             'play_duration' => 'required|integer|min:1'
         ]);
 
         $stream->update($validated);
-        return response()->json(['message' => 'Durasi putar lagu berhasil disimpan', 'data' => $stream], 200);
+        return response()->json(['message' => 'Song play duration saved successfully', 'data' => $stream], 200);
     }
 
     public function destroy($id)
     {
         $stream = SongStreamingHistory::query()->where('id_stream', $id)->first();
-        if (!$stream) return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+        if (!$stream) return response()->json(['message' => 'Transaction not found'], 404);
 
         $stream->delete();
-        return response()->json(['message' => 'Transaksi lagu berhasil dihapus'], 200);
+        return response()->json(['message' => 'Song stream record deleted successfully'], 200);
     }
 
-    // --- RIWAYAT STREAMING LAGU PER USER ---
+    // --- SONG STREAMING HISTORY PER USER ---
     public function getUserHistory($userId)
     {
         $history = SongStreamingHistory::with(['song.artists', 'song.album'])
@@ -75,14 +75,14 @@ class SongStreamingHistoryController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Riwayat streaming lagu user',
+            'message' => 'User song streaming history',
             'data' => $history
         ], 200);
     }
 
     public function getArtistHistory($artistId)
     {
-        // Ambil data streaming history yang relasi lagunya dimiliki oleh artist dengan ID tersebut
+        // Get streaming history where the song's relation belongs to the artist with given ID
         $history = SongStreamingHistory::with(['user', 'song.album'])
             ->whereHas('song.artists', function ($query) use ($artistId) {
                 $query->where('artist.id_artist', $artistId);
@@ -91,7 +91,7 @@ class SongStreamingHistoryController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Riwayat streaming lagu milik artis berhasil diambil',
+            'message' => 'Artist song streaming history retrieved successfully',
             'total_streams' => $history->count(),
             'data' => $history
         ], 200);

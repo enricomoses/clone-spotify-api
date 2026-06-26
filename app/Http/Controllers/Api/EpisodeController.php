@@ -14,15 +14,15 @@ class EpisodeController extends Controller
     public function index()
     {
         $episodes = Episode::with('podcast')->get();
-        return response()->json(['message' => 'Data episode', 'data' => $episodes], 200);
+        return response()->json(['message' => 'Episode data', 'data' => $episodes], 200);
     }
 
     public function show($id)
     {
         $episode = Episode::with('podcast')->where('id_episode', $id)->first();
-        if (!$episode) return response()->json(['message' => 'Episode tidak ditemukan'], 404);
+        if (!$episode) return response()->json(['message' => 'Episode not found'], 404);
 
-        return response()->json(['message' => 'Detail episode', 'data' => $episode], 200);
+        return response()->json(['message' => 'Episode detail', 'data' => $episode], 200);
     }
 
     // --- CRUD BASIC ---
@@ -37,14 +37,14 @@ class EpisodeController extends Controller
             'video_url' => 'nullable|string',
             'thumbnail_image' => 'nullable|string',
             'id_podcast' => 'required|string|exists:podcast,id_podcast',
-            'id_user' => 'required|string|exists:User,id_user' // User yang melakukan request
+            'id_user' => 'required|string|exists:User,id_user' // User making the request
         ]);
 
-        // Validasi ownership: hanya pemilik podcast yang bisa tambah episode
+        // Ownership validation: only the podcast owner can add episodes
         $podcast = Podcast::where('id_podcast', $validated['id_podcast'])->first();
         if ($podcast->id_user !== $validated['id_user']) {
             return response()->json([
-                'message' => 'Anda bukan pemilik podcast ini. Hanya pemilik yang bisa menambah episode.'
+                'message' => 'You are not the owner of this podcast. Only the owner can add episodes.'
             ], 403);
         }
 
@@ -63,15 +63,15 @@ class EpisodeController extends Controller
         $episode = Episode::create($episodeData);
         $episode->load('podcast');
 
-        return response()->json(['message' => 'Episode berhasil ditambahkan', 'data' => $episode], 201);
+        return response()->json(['message' => 'Episode added successfully', 'data' => $episode], 201);
     }
 
     public function update(Request $request, $id)
     {
         $episode = Episode::query()->where('id_episode', $id)->first();
-        if (!$episode) return response()->json(['message' => 'Episode tidak ditemukan'], 404);
+        if (!$episode) return response()->json(['message' => 'Episode not found'], 404);
 
-        // Validasi ownership: hanya pemilik podcast yang bisa update episode
+        // Ownership validation: only the podcast owner can update episodes
         $request->validate([
             'id_user' => 'required|string|exists:User,id_user'
         ]);
@@ -79,7 +79,7 @@ class EpisodeController extends Controller
         $podcast = Podcast::where('id_podcast', $episode->id_podcast)->first();
         if ($podcast->id_user !== $request->id_user) {
             return response()->json([
-                'message' => 'Anda bukan pemilik podcast ini. Hanya pemilik yang bisa mengupdate episode.'
+                'message' => 'You are not the owner of this podcast. Only the owner can update episodes.'
             ], 403);
         }
 
@@ -95,33 +95,33 @@ class EpisodeController extends Controller
 
         $episode->update($validated);
         $episode->load('podcast');
-        return response()->json(['message' => 'Episode berhasil diupdate', 'data' => $episode], 200);
+        return response()->json(['message' => 'Episode updated successfully', 'data' => $episode], 200);
     }
 
     public function destroy(Request $request, $id)
     {
         $episode = Episode::query()->where('id_episode', $id)->first();
         if (!$episode) {
-            return response()->json(['message' => 'Episode tidak ditemukan'], 404);
+            return response()->json(['message' => 'Episode not found'], 404);
         }
 
-        // Validasi ownership: hanya pemilik podcast yang bisa hapus episode
+        // Ownership validation: only the podcast owner can delete episodes
         $idUser = $request->query('id_user') ?? $request->id_user;
         if ($idUser) {
             $podcast = Podcast::where('id_podcast', $episode->id_podcast)->first();
             if ($podcast && $podcast->id_user !== $idUser) {
                 return response()->json([
-                    'message' => 'Anda bukan pemilik podcast ini. Hanya pemilik yang bisa menghapus episode.'
+                    'message' => 'You are not the owner of this podcast. Only the owner can delete episodes.'
                 ], 403);
             }
         }
 
-        // Hapus riwayat streaming yang terkait dengan episode ini terlebih dahulu
+        // Delete streaming history associated with this episode first
         DB::table('episode_streaminghistory')->where('id_episode', $id)->delete();
 
-        // Hapus episode utama
+        // Delete main episode data
         $episode->delete();
 
-        return response()->json(['message' => 'Episode berhasil dihapus'], 200);
+        return response()->json(['message' => 'Episode deleted successfully'], 200);
     }
 }
