@@ -101,14 +101,14 @@ class UserController extends Controller
     {
         // FIX: Load all important relations including followers, collaborativePlaylists, podcasts
         $user = User::with([
-            'followedPlaylists',
+            'followedPlaylists.collaborators',
             'following',
             'followers',
             'followedArtists',
             'followedPodcasts',
             'likedSongs.artists',
             'likedSongs.album',
-            'collaborativePlaylists',
+            'collaborativePlaylists.collaborators',
             'podcasts'
         ])->where('id_user', $id)->first();
 
