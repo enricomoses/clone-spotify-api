@@ -14,7 +14,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::all();
+        $users = User::withCount(['followers', 'following'])->get();
         return response()->json(['message' => 'User data', 'data' => $users], 200);
     }
 
@@ -29,7 +29,7 @@ class UserController extends Controller
             return response()->json(['message' => 'Search query is required', 'data' => []], 200);
         }
 
-        $users = User::where('name', 'LIKE', "%{$query}%")
+        $users = User::where('name', 'ILIKE', "%{$query}%")
             ->withCount(['followers', 'following'])
             ->limit(20)
             ->get();
