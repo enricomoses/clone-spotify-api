@@ -121,6 +121,12 @@ Route::get('/artists/{id}/song-streaming', [SongStreamingHistoryController::clas
 
 
 // ==========================================
+// USER PROFILE & SEARCH
+// ==========================================
+Route::get('/users/search', [UserController::class, 'search']);
+Route::get('/users/{id}/profile', [UserController::class, 'getUserProfile']);
+
+// ==========================================
 // 3. RESOURCE ROUTES (CRUD Standar)
 // ==========================================
 // (Route ini meng-generate index, store, show, update, destroy secara otomatis)

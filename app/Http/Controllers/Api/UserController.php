@@ -18,6 +18,64 @@ class UserController extends Controller
         return response()->json(['message' => 'User data', 'data' => $users], 200);
     }
 
+    /**
+     * Search users by name (GET /users/search?q=...)
+     */
+    public function search(Request $request)
+    {
+        $query = $request->query('q', '');
+
+        if (strlen($query) < 1) {
+            return response()->json(['message' => 'Search query is required', 'data' => []], 200);
+        }
+
+        $users = User::where('name', 'LIKE', "%{$query}%")
+            ->withCount(['followers', 'following'])
+            ->limit(20)
+            ->get();
+
+        return response()->json(['message' => 'Search results', 'data' => $users], 200);
+    }
+
+    /**
+     * Get user public profile (GET /users/{id}/profile)
+     * Returns user info, playlists, podcasts, followers/following, recent played artists
+     */
+    public function getUserProfile($id)
+    {
+        $user = User::with([
+            'following',
+            'followers',
+            'followedArtists',
+            'podcasts',
+        ])->withCount(['followers', 'following'])->where('id_user', $id)->first();
+
+        if (!$user) return response()->json(['message' => 'User not found'], 404);
+
+        // Get playlists where user is Owner (via playlist_collaborator)
+        $userPlaylists = Playlist::with(['songs', 'collaborators', 'category'])
+            ->whereHas('collaborators', function ($q) use ($id) {
+                $q->where('id_user', $id)->where('role', 'Owner');
+            })->get();
+
+        // Get recent played artists from streaming history
+        $recentArtists = DB::table('song_streaminghistory')
+            ->join('song_artist', 'song_streaminghistory.id_song', '=', 'song_artist.id_song')
+            ->join('artists', 'song_artist.id_artist', '=', 'artists.id_artist')
+            ->where('song_streaminghistory.id_user', $id)
+            ->select('artists.id_artist', 'artists.name', 'artists.profile_picture', DB::raw('COUNT(*) as play_count'), DB::raw('MAX(song_streaminghistory.played_at) as last_played'))
+            ->groupBy('artists.id_artist', 'artists.name', 'artists.profile_picture')
+            ->orderByDesc('last_played')
+            ->limit(10)
+            ->get();
+
+        $responseData = $user->toArray();
+        $responseData['user_playlists'] = $userPlaylists;
+        $responseData['recent_artists'] = $recentArtists;
+
+        return response()->json(['message' => 'User profile', 'data' => $responseData], 200);
+    }
+
     public function store(Request $request)
     {
         // 1. Validate input from frontend
