@@ -55,7 +55,7 @@ class UserController extends Controller
         // Get playlists where user is Owner (via playlist_collaborator)
         $userPlaylists = Playlist::with(['songs', 'collaborators', 'category'])
             ->whereHas('collaborators', function ($q) use ($id) {
-                $q->where('id_user', $id)->where('role', 'Owner');
+                $q->where('playlist_collaborator.id_user', $id)->where('playlist_collaborator.role', 'Owner');
             })->get();
 
         // Get recent played artists from streaming history
