@@ -59,11 +59,11 @@ class UserController extends Controller
             })->get();
 
         // Get recent played artists from streaming history
-        $recentArtists = DB::table('song_streaminghistory')
-            ->join('song_artist', 'song_streaminghistory.id_song', '=', 'song_artist.id_song')
+        $recentArtists = DB::table('song_streaming_histories')
+            ->join('song_artist', 'song_streaming_histories.id_song', '=', 'song_artist.id_song')
             ->join('artists', 'song_artist.id_artist', '=', 'artists.id_artist')
-            ->where('song_streaminghistory.id_user', $id)
-            ->select('artists.id_artist', 'artists.name', 'artists.profile_picture', DB::raw('COUNT(*) as play_count'), DB::raw('MAX(song_streaminghistory.played_at) as last_played'))
+            ->where('song_streaming_histories.id_user', $id)
+            ->select('artists.id_artist', 'artists.name', 'artists.profile_picture', DB::raw('COUNT(*) as play_count'), DB::raw('MAX(song_streaming_histories.played_at) as last_played'))
             ->groupBy('artists.id_artist', 'artists.name', 'artists.profile_picture')
             ->orderByDesc('last_played')
             ->limit(10)
@@ -174,8 +174,8 @@ class UserController extends Controller
         // ==========================================
 
         // 1. Delete streaming history
-        DB::table('song_streaminghistory')->where('id_user', $id)->delete();
-        DB::table('episode_streaminghistory')->where('id_user', $id)->delete();
+        DB::table('song_streaming_histories')->where('id_user', $id)->delete();
+        DB::table('episode_streaming_histories')->where('id_user', $id)->delete();
 
         // 2. Delete social data (Like & Follow)
         DB::table('user_likedsong')->where('id_user', $id)->delete();
