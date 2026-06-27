@@ -83,10 +83,10 @@ class User extends Authenticatable
     // Relasi Rekursif (Saling Follow antar User)
     public function followers()
     {
-        return $this->belongsToMany(User::class, 'user_followuser', 'followed_id', 'follower_id');
+        return $this->belongsToMany(User::class, 'user_followuser', 'followed_id', 'follower_id', 'id_user', 'id_user');
     }
     public function following()
     {
-        return $this->belongsToMany(User::class, 'user_followuser', 'follower_id', 'followed_id');
+        return $this->belongsToMany(User::class, 'user_followuser', 'follower_id', 'followed_id', 'id_user', 'id_user');
     }
 }
