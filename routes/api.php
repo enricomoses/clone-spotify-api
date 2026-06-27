@@ -125,15 +125,6 @@ Route::get('/artists/{id}/song-streaming', [SongStreamingHistoryController::clas
 // ==========================================
 Route::get('/users/search', [UserController::class, 'search']);
 Route::get('/users/{id}/profile', [UserController::class, 'getUserProfile']);
-Route::get('/debug-follow', function() {
-    $user = User::with(['following', 'followers'])->where('id_user', 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf')->first();
-    return response()->json([
-        'user_id' => $user->id_user,
-        'user_following_relation' => $user->following,
-        'user_followers_relation' => $user->followers,
-        'enrico_following_raw' => DB::table('user_followuser')->where('follower_id', 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf')->get(),
-    ]);
-});
 
 // ==========================================
 // 3. RESOURCE ROUTES (CRUD Standar)
