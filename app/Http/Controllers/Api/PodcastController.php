@@ -6,8 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Podcast;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB; // Required for executing manual queries during deletion
-
+use Illuminate\Support\Facades\DB;
 class PodcastController extends Controller
 {
     public function index()

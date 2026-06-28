@@ -69,7 +69,6 @@ class ConcertController extends Controller
             'artist_ids.*' => 'exists:artists,id_artist'
         ]);
 
-        // Update basic concert data
         $concert->update($request->only(['location', 'location_url', 'event_at', 'ticket_url']));
 
         if ($request->has('artist_ids')) {
@@ -111,7 +110,6 @@ class ConcertController extends Controller
         $concert = Concert::query()->where('id_concert', $id)->first();
         if (!$concert) return response()->json(['message' => 'Concert not found'], 404);
 
-        // Check that concert does not end up with 0 artists (at least 1 artist)
         $currentArtistCount = $concert->artists()->count();
         if ($currentArtistCount <= 1) {
             return response()->json([

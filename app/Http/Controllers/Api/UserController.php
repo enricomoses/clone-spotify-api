@@ -154,15 +154,10 @@ class UserController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
 
-        // ==========================================
-        // CASCADE DELETE PROCESS (RELATION CLEANUP)
-        // ==========================================
 
-        // 1. Delete streaming history
         DB::table('song_streaming_histories')->where('id_user', $id)->delete();
         DB::table('episode_streaming_histories')->where('id_user', $id)->delete();
 
-        // 2. Delete social data (Like & Follow)
         DB::table('user_likedsong')->where('id_user', $id)->delete();
         DB::table('user_followartist')->where('id_user', $id)->delete();
         DB::table('user_followplaylist')->where('id_user', $id)->delete();

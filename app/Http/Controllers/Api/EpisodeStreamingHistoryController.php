@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\EpisodeStreamingHistory; // Ensure this model exists
+use App\Models\EpisodeStreamingHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
