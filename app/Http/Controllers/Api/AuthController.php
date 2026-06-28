@@ -47,7 +47,6 @@ class AuthController extends Controller
 
         $artist = Artist::query()->where('email', $request->email)->first();
 
-        // Check if artist exists and password matches (without hashing)
         if (!$artist || $artist->password !== $request->password) {
             return response()->json(['message' => 'Invalid artist credentials'], 401);
         }

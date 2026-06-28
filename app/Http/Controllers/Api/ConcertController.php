@@ -17,7 +17,6 @@ class ConcertController extends Controller
 
     public function show($id)
     {
-        // Fix Intelephense warnings with where()->first()
         $concert = Concert::with('artists')->where('id_concert', $id)->first();
         if (!$concert) return response()->json(['message' => 'Concert not found'], 404);
 
@@ -27,7 +26,6 @@ class ConcertController extends Controller
     // --- CRUD BASIC ---
     public function store(Request $request)
     {
-        // FIX: Add required artist_ids array validation from frontend
         $validated = $request->validate([
             'location' => 'required|string',
             'location_url' => 'nullable|url',
@@ -74,7 +72,6 @@ class ConcertController extends Controller
         // Update basic concert data
         $concert->update($request->only(['location', 'location_url', 'event_at', 'ticket_url']));
 
-        // FIX: Sync pivot table data if frontend sends new artist_ids array
         if ($request->has('artist_ids')) {
             $concert->artists()->sync($validated['artist_ids']);
         }
@@ -90,10 +87,8 @@ class ConcertController extends Controller
             return response()->json(['message' => 'Concert not found'], 404);
         }
 
-        // FIX: Detach relations in artist_concert pivot table first
         $concert->artists()->detach();
 
-        // Delete main concert data
         $concert->delete();
 
         return response()->json(['message' => 'Concert deleted successfully'], 200);

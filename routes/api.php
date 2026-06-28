@@ -3,7 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Import Semua Controller
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\SocialController;
@@ -34,7 +33,7 @@ Route::post('/login/artist', [AuthController::class, 'loginArtist']);
 
 
 // ==========================================
-// 2. CUSTOM ROUTES (Wajib di atas Resource!)
+// 2. CUSTOM ROUTES
 // ==========================================
 
 // Kategori & Discover
@@ -129,8 +128,6 @@ Route::get('/users/{id}/profile', [UserController::class, 'getUserProfile']);
 // ==========================================
 // 3. RESOURCE ROUTES (CRUD Standar)
 // ==========================================
-// (Route ini meng-generate index, store, show, update, destroy secara otomatis)
-
 Route::apiResource('users', UserController::class);
 Route::apiResource('artists', ArtistController::class);
 Route::apiResource('albums', AlbumController::class);

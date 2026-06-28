@@ -82,12 +82,11 @@ class MediaController extends Controller
             $folder = $request->folder ? 'spotify-clone/audio/' . $request->folder : 'spotify-clone/audio';
             $cloudinary = $this->getCloudinary();
 
-            // Upload with quality and bitrate optimization parameters
             $response = $cloudinary->uploadApi()->upload($request->file('audio')->getRealPath(), [
                 'folder' => $folder,
-                'resource_type' => 'video', // REQUIRED to be 'video' for audio files on Cloudinary
+                'resource_type' => 'video',
                 'quality' => 'auto',
-                'bitrate' => '64k'          // Save bandwidth
+                'bitrate' => '64k'
             ]);
 
             return response()->json([
@@ -112,7 +111,6 @@ class MediaController extends Controller
 
             $cloudinary = $this->getCloudinary();
 
-            // IMPORTANT: Required to include resource_type => 'video' when deleting audio
             $cloudinary->uploadApi()->destroy($publicId, [
                 'resource_type' => 'video'
             ]);
@@ -132,7 +130,6 @@ class MediaController extends Controller
 
     public function uploadVideo(Request $request)
     {
-        // Validate common video extensions, limit stays at 4MB to adjust to Vercel
         $request->validate([
             'video' => 'required|file|extensions:mp4,mov,avi,webm,mkv|max:4096',
             'folder' => 'nullable|string'
@@ -142,21 +139,20 @@ class MediaController extends Controller
             $folder = $request->folder ? 'spotify-clone/video/' . $request->folder : 'spotify-clone/video';
             $cloudinary = $this->getCloudinary();
 
-            // Upload with high-level video compression parameters (Extreme Optimization)
             $response = $cloudinary->uploadApi()->upload($request->file('video')->getRealPath(), [
                 'folder' => $folder,
-                'resource_type' => 'video', // Cloudinary uses 'video' for both audio and video
-                'quality' => 'auto:eco',    // Most aggressive/eco quality compression
-                'width' => 640,             // Scale down max resolution to 640px width (480p)
+                'resource_type' => 'video',
+                'quality' => 'auto:eco',
+                'width' => 640,
                 'crop' => 'scale',
-                'audio_codec' => 'aac'      // Standardize audio codec to keep it lightweight
+                'audio_codec' => 'aac'
             ]);
 
             return response()->json([
                 'message' => 'Video uploaded and fully compressed successfully',
                 'secure_url' => $response['secure_url'],
                 'public_id' => $response['public_id'],
-                'duration' => $response['duration'] ?? 0 // Video duration in seconds
+                'duration' => $response['duration'] ?? 0
             ], 201);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Failed to upload video: ' . $e->getMessage()], 500);
@@ -174,7 +170,6 @@ class MediaController extends Controller
 
             $cloudinary = $this->getCloudinary();
 
-            // Video deletion logic is exactly the same as audio (resource_type => 'video')
             $cloudinary->uploadApi()->destroy($publicId, [
                 'resource_type' => 'video'
             ]);

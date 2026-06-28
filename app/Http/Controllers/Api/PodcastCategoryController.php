@@ -23,8 +23,8 @@ class PodcastCategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'cover_image' => 'required|string',  // ERD: mandatory (*)
-            'icon' => 'required|string'           // ERD: mandatory (*)
+            'cover_image' => 'required|string',
+            'icon' => 'required|string'
         ]);
 
         $validated['id_podcast_category'] = Str::uuid()->toString();
@@ -70,13 +70,10 @@ class PodcastCategoryController extends Controller
         // ==========================================
         // RELATIONS CLEANUP PROCESS
         // ==========================================
-        // Set all podcasts using this category to null
-        // Prevent Foreign Key Constraint errors and prevent podcasts from being deleted
         DB::table('podcast')
             ->where('id_podcast_category', $id)
             ->update(['id_podcast_category' => null]);
 
-        // Safely delete the category after relations are updated
         $category->delete();
 
         return response()->json(['message' => 'Podcast category deleted successfully and associated podcasts have been updated'], 200);

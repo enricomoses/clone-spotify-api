@@ -49,7 +49,6 @@ class PlaylistController extends Controller
 
         $playlist = Playlist::create($playlistData);
 
-        // Automatically create playlist_collaborator pivot with role 'Owner'
         $playlist->collaborators()->attach($validated['id_user'], ['role' => 'Owner']);
         $playlist->load(['collaborators', 'songs']);
 
@@ -61,7 +60,6 @@ class PlaylistController extends Controller
         $playlist = Playlist::query()->where('id_playlist', $id)->first();
         if (!$playlist) return response()->json(['message' => 'Playlist not found'], 404);
 
-        // Validation: only Owner can update playlist
         $request->validate([
             'id_user' => 'required|string|exists:users,id_user'
         ]);
@@ -95,7 +93,6 @@ class PlaylistController extends Controller
             return response()->json(['message' => 'Playlist not found'], 404);
         }
 
-        // Validation: only Owner can delete playlist
         $idUser = $request->query('id_user') ?? $request->id_user;
         if (!$idUser) {
             return response()->json(['message' => 'Parameter id_user is required for ownership validation'], 400);

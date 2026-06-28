@@ -23,8 +23,8 @@ class PlaylistCategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'cover_image' => 'required|string',  // ERD: mandatory (*)
-            'icon' => 'required|string'           // ERD: mandatory (*)
+            'cover_image' => 'required|string',
+            'icon' => 'required|string'
         ]);
 
         $validated['id_playlist_category'] = Str::uuid()->toString();
@@ -35,7 +35,6 @@ class PlaylistCategoryController extends Controller
 
     public function show($id)
     {
-        // FIX: Using where()->first() because PK is not default 'id'
         $category = PlaylistCategory::with('playlists')
             ->where('id_playlist_category', $id)
             ->first();
@@ -48,7 +47,6 @@ class PlaylistCategoryController extends Controller
 
     public function update(Request $request, $id)
     {
-        // FIX: Using where()->first() because PK is not default 'id'
         $category = PlaylistCategory::query()->where('id_playlist_category', $id)->first();
         if (!$category) return response()->json(['message' => 'Category not found'], 404);
 
@@ -73,13 +71,10 @@ class PlaylistCategoryController extends Controller
         // ==========================================
         // RELATIONS CLEANUP PROCESS
         // ==========================================
-        // Set all playlists using this category to null
-        // Prevent Foreign Key Constraint errors and prevent playlists from being deleted
         DB::table('playlist')
             ->where('id_playlist_category', $id)
             ->update(['id_playlist_category' => null]);
 
-        // Safely delete the category after relations are updated
         $category->delete();
 
         return response()->json(['message' => 'Category deleted successfully and associated playlists have been updated'], 200);

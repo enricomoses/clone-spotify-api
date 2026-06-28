@@ -12,7 +12,6 @@ class PodcastController extends Controller
 {
     public function index()
     {
-        // Eager load category and creator (User who created)
         $podcasts = Podcast::with(['category', 'creator'])->get();
         return response()->json(['message' => 'Podcast data', 'data' => $podcasts], 200);
     }
@@ -23,16 +22,13 @@ class PodcastController extends Controller
             'name' => 'required|string|max:150',
             'about' => 'nullable|string',
             'cover_image' => 'nullable|string',
-            // Category is optional (nullable)
             'id_podcast_category' => 'nullable|string|exists:podcast_categories,id_podcast_category',
-            // Creator/User is required
             'id_user' => 'required|string|exists:users,id_user'
         ]);
 
         $validated['id_podcast'] = Str::uuid()->toString();
         $podcast = Podcast::create($validated);
 
-        // Load relations so the frontend gets complete data in the response
         $podcast->load(['category', 'creator']);
 
         return response()->json(['message' => 'Podcast created successfully', 'data' => $podcast], 201);
@@ -40,8 +36,6 @@ class PodcastController extends Controller
 
     public function show($id)
     {
-        // Using where()->first() for Intelephense safety
-        // Assumption: Your Podcast Model has followers() relationship referencing user_followpodcast
         $podcast = Podcast::with(['episodes', 'category', 'creator', 'followers'])
             ->where('id_podcast', $id)
             ->first();
@@ -66,7 +60,6 @@ class PodcastController extends Controller
 
         $podcast->update($validated);
         
-        // Reload updated relation data if changed
         $podcast->load(['category', 'creator']);
 
         return response()->json(['message' => 'Podcast updated successfully', 'data' => $podcast], 200);

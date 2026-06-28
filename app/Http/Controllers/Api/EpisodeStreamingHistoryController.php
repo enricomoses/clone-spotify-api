@@ -15,7 +15,6 @@ class EpisodeStreamingHistoryController extends Controller
         return response()->json(['message' => 'Episode streaming history retrieved successfully', 'data' => $history], 200);
     }
 
-    // --- LOGIC WHEN PLAY BUTTON IS PRESSED ---
     public function store(Request $request)
     {
         $validated = $request->validate([

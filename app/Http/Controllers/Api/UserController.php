@@ -18,9 +18,6 @@ class UserController extends Controller
         return response()->json(['message' => 'User data', 'data' => $users], 200);
     }
 
-    /**
-     * Search users by name (GET /users/search?q=...)
-     */
     public function search(Request $request)
     {
         $query = $request->query('q', '');
@@ -37,10 +34,6 @@ class UserController extends Controller
         return response()->json(['message' => 'Search results', 'data' => $users], 200);
     }
 
-    /**
-     * Get user public profile (GET /users/{id}/profile)
-     * Returns user info, playlists, podcasts, followers/following, recent played artists
-     */
     public function getUserProfile($id)
     {
         $user = User::with([
@@ -52,13 +45,11 @@ class UserController extends Controller
 
         if (!$user) return response()->json(['message' => 'User not found'], 404);
 
-        // Get playlists where user is Owner (via playlist_collaborator)
         $userPlaylists = Playlist::with(['songs', 'collaborators', 'category'])
             ->whereHas('collaborators', function ($q) use ($id) {
                 $q->where('playlist_collaborator.id_user', $id)->where('playlist_collaborator.role', 'Owner');
             })->get();
 
-        // Get recent played artists from streaming history
         $recentArtists = DB::table('song_streaming_histories')
             ->join('song_artist', 'song_streaming_histories.id_song', '=', 'song_artist.id_song')
             ->join('artists', 'song_artist.id_artist', '=', 'artists.id_artist')
@@ -78,7 +69,6 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validate input from frontend
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:users,email',
@@ -99,7 +89,6 @@ class UserController extends Controller
 
     public function show($id)
     {
-        // FIX: Load all important relations including followers, collaborativePlaylists, podcasts
         $user = User::with([
             'followedPlaylists.collaborators',
             'following',
@@ -119,13 +108,11 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
-        // FIX: Using where()->first() because PK is not the default 'id'
         $user = User::where('id_user', $id)->first();
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
         }
 
-        // CONSTRAINT / BUSINESS RULE VALIDATION ON UPDATE
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:100',
             'birthday' => 'nullable|date|before:today', // Constraint: Birthday must be before today
@@ -154,7 +141,6 @@ class UserController extends Controller
             ]
         ]);
 
-        // Remove current_password so it is not included in the database update query
         unset($validated['current_password']);
 
         $user->update($validated);
@@ -163,7 +149,6 @@ class UserController extends Controller
 
     public function destroy($id)
     {
-        // FIX: Using where()->first() because PK is not the default 'id'
         $user = User::where('id_user', $id)->first();
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
@@ -183,17 +168,12 @@ class UserController extends Controller
         DB::table('user_followplaylist')->where('id_user', $id)->delete();
         DB::table('user_followpodcast')->where('id_user', $id)->delete();
 
-        // 3. Delete follow relations between users (both as follower and followed)
         DB::table('user_followuser')->where('follower_id', $id)->orWhere('followed_id', $id)->delete();
 
-        // 4. Handle playlists owned by this user
-        //    - If user is Owner → delete playlist along with its relations
-        //    - If user is Editor → just remove from collaborator
         $collaborations = DB::table('playlist_collaborator')->where('id_user', $id)->get();
 
         foreach ($collaborations as $collab) {
             if ($collab->role === 'Owner') {
-                // This user is the playlist Owner → delete playlist along with all its relations
                 $playlist = Playlist::where('id_playlist', $collab->id_playlist)->first();
                 if ($playlist) {
                     $playlist->collaborators()->detach();
@@ -208,7 +188,6 @@ class UserController extends Controller
         DB::table('playlist_collaborator')->where('id_user', $id)->delete();
 
         // 5. Handle Podcasts created by this user
-        //    Since in ERD podcast is created by user (mandatory FK), delete podcast along with its relations
         $podcasts = DB::table('podcast')->where('id_user', $id)->pluck('id_podcast');
         foreach ($podcasts as $podcastId) {
             // Delete podcast followers

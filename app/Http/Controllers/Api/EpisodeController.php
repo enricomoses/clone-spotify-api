@@ -40,7 +40,6 @@ class EpisodeController extends Controller
             'id_user' => 'required|string|exists:users,id_user' // User making the request
         ]);
 
-        // Ownership validation: only the podcast owner can add episodes
         $podcast = Podcast::where('id_podcast', $validated['id_podcast'])->first();
         if ($podcast->id_user !== $validated['id_user']) {
             return response()->json([
@@ -71,7 +70,6 @@ class EpisodeController extends Controller
         $episode = Episode::query()->where('id_episode', $id)->first();
         if (!$episode) return response()->json(['message' => 'Episode not found'], 404);
 
-        // Ownership validation: only the podcast owner can update episodes
         $request->validate([
             'id_user' => 'required|string|exists:users,id_user'
         ]);
@@ -105,7 +103,6 @@ class EpisodeController extends Controller
             return response()->json(['message' => 'Episode not found'], 404);
         }
 
-        // Ownership validation: only the podcast owner can delete episodes
         $idUser = $request->query('id_user') ?? $request->id_user;
         if ($idUser) {
             $podcast = Podcast::where('id_podcast', $episode->id_podcast)->first();
@@ -116,10 +113,8 @@ class EpisodeController extends Controller
             }
         }
 
-        // Delete streaming history associated with this episode first
         DB::table('episode_streaminghistory')->where('id_episode', $id)->delete();
 
-        // Delete main episode data
         $episode->delete();
 
         return response()->json(['message' => 'Episode deleted successfully'], 200);

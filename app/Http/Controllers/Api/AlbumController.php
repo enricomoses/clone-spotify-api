@@ -18,11 +18,10 @@ class AlbumController extends Controller
 
     public function store(Request $request)
     {
-        // FIX: Adding required artist_ids array validation from frontend
         $validated = $request->validate([
             'title' => 'required|string|max:150',
             'release' => 'required|date',
-            'cover_image' => 'required|string',  // ERD: mandatory (*)
+            'cover_image' => 'required|string',
             'artist_ids' => 'required|array',
             'artist_ids.*' => 'exists:artists,id_artist'
         ]);
@@ -48,7 +47,6 @@ class AlbumController extends Controller
 
     public function show($id)
     {
-        // FIX: Using where()->first() to prevent Intelephense false-positive warning
         $album = Album::with('artists', 'songs.artists')->where('id_album', $id)->first();
 
         if (!$album) return response()->json(['message' => 'Album not found'], 404);
@@ -68,10 +66,8 @@ class AlbumController extends Controller
             'artist_ids.*' => 'exists:artists,id_artist'
         ]);
 
-        // Update basic album data
         $album->update($request->only(['title', 'release', 'cover_image']));
 
-        // FIX: Synchronize pivot table data if frontend sends new artist_ids array
         if ($request->has('artist_ids')) {
             $album->artists()->sync($validated['artist_ids']);
         }
@@ -87,18 +83,15 @@ class AlbumController extends Controller
             return response()->json(['message' => 'Album not found'], 404);
         }
 
-        // FIX: Detach relations in artist_album pivot table first to avoid orphaned data
         $album->artists()->detach();
 
         DB::table('song')->where('id_album', $id)->update(['id_album' => null]);
 
-        // Delete main album data
         $album->delete();
 
         return response()->json(['message' => 'Album deleted successfully'], 200);
     }
 
-    // --- MANUAL ARTIST MANAGEMENT ON ALBUM (ADDITIONAL ENDPOINTS) ---
     public function addArtist(Request $request, $id)
     {
         $album = Album::query()->where('id_album', $id)->first();
@@ -115,7 +108,6 @@ class AlbumController extends Controller
         $album = Album::query()->where('id_album', $id)->first();
         if (!$album) return response()->json(['message' => 'Album not found'], 404);
 
-        // Check that album does not end up with 0 artists (at least 1 artist is required)
         $currentArtistCount = $album->artists()->count();
         if ($currentArtistCount <= 1) {
             return response()->json([

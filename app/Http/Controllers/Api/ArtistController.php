@@ -13,7 +13,6 @@ class ArtistController extends Controller
 {
     public function index()
     {
-        // Display artist data complete with all their relations
         $artists = Artist::with(['albums', 'songs.album', 'songs.artists', 'concerts', 'galleries'])->get();
         return response()->json(['message' => 'Artist data', 'data' => $artists], 200);
     }
@@ -57,8 +56,6 @@ class ArtistController extends Controller
             return response()->json(['message' => 'Artist not found'], 404);
         }
 
-        // Validation tailored to your ERD structure
-        // Using unique with ID exception so updating own profile with same email doesn't trigger error
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:150',
             'email' => 'sometimes|required|email|unique:artists,email,' . $id . ',id_artist',
@@ -83,13 +80,6 @@ class ArtistController extends Controller
             return response()->json(['message' => 'Artist not found'], 404);
         }
 
-        // ==========================================
-        // CASCADE DELETE PROCESS (RELATIONS CLEANUP)
-        // ==========================================
-
-        // 1. Find songs that ONLY belong to this artist (no other artists)
-        //    If the song only has 1 artist (this artist), the song must be deleted
-        //    because according to ERD a song MUST be owned by at least 1 artist
         $songIds = DB::table('song_artist')->where('id_artist', $id)->pluck('id_song');
 
         foreach ($songIds as $songId) {

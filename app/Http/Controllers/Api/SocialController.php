@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 
 class SocialController extends Controller
 {
-    // Helper function to find user to avoid code repetition
     private function getUser($id)
     {
         return User::query()->where('id_user', $id)->first();

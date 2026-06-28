@@ -15,7 +15,6 @@ class SongStreamingHistoryController extends Controller
         return response()->json(['message' => 'Song streaming history retrieved successfully', 'data' => $history], 200);
     }
 
-    // --- LOGIC WHEN PLAY BUTTON IS PRESSED ---
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -24,13 +23,11 @@ class SongStreamingHistoryController extends Controller
         ]);
 
         $validated['id_stream'] = Str::uuid()->toString();
-        $validated['played_at'] = now(); // Automatically record current server time
-        $validated['play_duration'] = null; // Leave empty because song just started
+        $validated['played_at'] = now();
+        $validated['play_duration'] = null;
 
         $stream = SongStreamingHistory::create($validated);
 
-        // IMPORTANT: Frontend must save the returned 'id_stream'
-        // to be used when sending duration updates (pause/finished)
         return response()->json(['message' => 'Song playback started', 'data' => $stream], 201);
     }
 
@@ -48,7 +45,6 @@ class SongStreamingHistoryController extends Controller
         $stream = SongStreamingHistory::query()->where('id_stream', $id)->first();
         if (!$stream) return response()->json(['message' => 'Transaction not found'], 404);
 
-        // Frontend only needs to send the duration (in seconds)
         $validated = $request->validate([
             'play_duration' => 'required|integer|min:1'
         ]);
@@ -82,7 +78,6 @@ class SongStreamingHistoryController extends Controller
 
     public function getArtistHistory($artistId)
     {
-        // Get streaming history where the song's relation belongs to the artist with given ID
         $history = SongStreamingHistory::with(['user', 'song.album'])
             ->whereHas('song.artists', function ($query) use ($artistId) {
                 $query->where('artist.id_artist', $artistId);

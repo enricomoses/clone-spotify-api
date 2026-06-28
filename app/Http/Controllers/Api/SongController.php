@@ -6,13 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Song;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB; // Required for executing relation cleanup queries
-
+use Illuminate\Support\Facades\DB; 
 class SongController extends Controller
 {
     public function index()
     {
-        // Display all songs with album and artist data
         $songs = Song::with(['album', 'artists'])->get();
         return response()->json(['message' => 'Song data retrieved successfully', 'data' => $songs], 200);
     }
@@ -25,11 +23,9 @@ class SongController extends Controller
             'id_album' => 'nullable|string|exists:albums,id_album',
             'audio_url' => 'required|string',
 
-            // Required: artists who perform the song (array)
             'artist_ids' => 'required|array|min:1',
             'artist_ids.*' => 'exists:artists,id_artist',
 
-            // Optional: If song is directly added to a playlist on creation
             'playlist_ids' => 'nullable|array',
             'playlist_ids.*' => 'exists:playlists,id_playlist'
         ]);
@@ -132,7 +128,6 @@ class SongController extends Controller
 
     public function discoverWeekly()
     {
-        // FIX: Adding 'artists' so frontend can display singer names
         $topSongs = Song::with(['album', 'artists'])
             ->withCount('streamingHistories')
             ->orderBy('streaming_histories_count', 'desc')
