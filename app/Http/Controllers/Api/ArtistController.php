@@ -92,7 +92,7 @@ class ArtistController extends Controller
                     $song->artists()->detach();
                     $song->playlists()->detach();
                     DB::table('user_likedsong')->where('id_song', $songId)->delete();
-                    DB::table('song_streaminghistory')->where('id_song', $songId)->delete();
+                    DB::table('song_streaming_histories')->where('id_song', $songId)->delete();
                     $song->delete();
                 }
             }
@@ -107,8 +107,8 @@ class ArtistController extends Controller
         // 4. Detach concert relation (artist_concert table) - concert is not deleted because it can belong to other artists
         $artist->concerts()->detach();
 
-        // 5. Delete gallery (artist_gallery table) - gallery belongs to 1 artist, so delete it
-        DB::table('artist_gallery')->where('id_artist', $id)->delete();
+        // 5. Delete gallery (artist_galleries table) - gallery belongs to 1 artist, so delete it
+        DB::table('artist_galleries')->where('id_artist', $id)->delete();
 
         // 6. Delete all followers (user_followartist table)
         DB::table('user_followartist')->where('id_artist', $id)->delete();

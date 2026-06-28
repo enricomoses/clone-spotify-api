@@ -117,8 +117,8 @@ class SongController extends Controller
         // 3. Detach relation with users who liked the song (user_likedsong table)
         DB::table('user_likedsong')->where('id_song', $id)->delete();
 
-        // 4. Delete streaming history for this song (song_streaminghistory table)
-        DB::table('song_streaminghistory')->where('id_song', $id)->delete();
+        // 4. Delete streaming history for this song (song_streaming_histories table)
+        DB::table('song_streaming_histories')->where('id_song', $id)->delete();
 
         // 5. After all relations are cleaned, delete the song
         $song->delete();

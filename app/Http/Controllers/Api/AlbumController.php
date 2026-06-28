@@ -85,7 +85,7 @@ class AlbumController extends Controller
 
         $album->artists()->detach();
 
-        DB::table('song')->where('id_album', $id)->update(['id_album' => null]);
+        DB::table('songs')->where('id_album', $id)->update(['id_album' => null]);
 
         $album->delete();
 

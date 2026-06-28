@@ -80,14 +80,14 @@ class PodcastController extends Controller
         DB::table('user_followpodcast')->where('id_podcast', $id)->delete();
 
         // 2. Find all episodes belonging to this podcast
-        $episodes = DB::table('episode')->where('id_podcast', $id)->pluck('id_episode');
+        $episodes = DB::table('episodes')->where('id_podcast', $id)->pluck('id_episode');
         
         if ($episodes->isNotEmpty()) {
             // 3. Delete streaming history of those episodes
-            DB::table('episode_streaminghistory')->whereIn('id_episode', $episodes)->delete();
+            DB::table('episode_streaming_histories')->whereIn('id_episode', $episodes)->delete();
             
             // 4. Delete the episodes
-            DB::table('episode')->where('id_podcast', $id)->delete();
+            DB::table('episodes')->where('id_podcast', $id)->delete();
         }
 
         // 5. After all relations are cleaned, delete the main podcast

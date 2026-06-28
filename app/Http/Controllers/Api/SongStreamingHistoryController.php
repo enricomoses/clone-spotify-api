@@ -80,7 +80,7 @@ class SongStreamingHistoryController extends Controller
     {
         $history = SongStreamingHistory::with(['user', 'song.album'])
             ->whereHas('song.artists', function ($query) use ($artistId) {
-                $query->where('artist.id_artist', $artistId);
+                $query->where('artists.id_artist', $artistId);
             })
             ->orderBy('played_at', 'desc')
             ->get();

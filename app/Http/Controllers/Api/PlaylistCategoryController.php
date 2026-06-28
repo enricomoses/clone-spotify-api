@@ -71,7 +71,7 @@ class PlaylistCategoryController extends Controller
         // ==========================================
         // RELATIONS CLEANUP PROCESS
         // ==========================================
-        DB::table('playlist')
+        DB::table('playlists')
             ->where('id_playlist_category', $id)
             ->update(['id_playlist_category' => null]);
 

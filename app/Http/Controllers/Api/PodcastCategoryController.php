@@ -70,7 +70,7 @@ class PodcastCategoryController extends Controller
         // ==========================================
         // RELATIONS CLEANUP PROCESS
         // ==========================================
-        DB::table('podcast')
+        DB::table('podcasts')
             ->where('id_podcast_category', $id)
             ->update(['id_podcast_category' => null]);
 

@@ -113,7 +113,7 @@ class EpisodeController extends Controller
             }
         }
 
-        DB::table('episode_streaminghistory')->where('id_episode', $id)->delete();
+        DB::table('episode_streaming_histories')->where('id_episode', $id)->delete();
 
         $episode->delete();
 

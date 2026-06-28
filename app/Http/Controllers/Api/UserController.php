@@ -183,20 +183,20 @@ class UserController extends Controller
         DB::table('playlist_collaborator')->where('id_user', $id)->delete();
 
         // 5. Handle Podcasts created by this user
-        $podcasts = DB::table('podcast')->where('id_user', $id)->pluck('id_podcast');
+        $podcasts = DB::table('podcasts')->where('id_user', $id)->pluck('id_podcast');
         foreach ($podcasts as $podcastId) {
             // Delete podcast followers
             DB::table('user_followpodcast')->where('id_podcast', $podcastId)->delete();
 
             // Delete episodes along with their streaming history
-            $episodes = DB::table('episode')->where('id_podcast', $podcastId)->pluck('id_episode');
+            $episodes = DB::table('episodes')->where('id_podcast', $podcastId)->pluck('id_episode');
             if ($episodes->isNotEmpty()) {
-                DB::table('episode_streaminghistory')->whereIn('id_episode', $episodes)->delete();
-                DB::table('episode')->where('id_podcast', $podcastId)->delete();
+                DB::table('episode_streaming_histories')->whereIn('id_episode', $episodes)->delete();
+                DB::table('episodes')->where('id_podcast', $podcastId)->delete();
             }
 
             // Delete podcast
-            DB::table('podcast')->where('id_podcast', $podcastId)->delete();
+            DB::table('podcasts')->where('id_podcast', $podcastId)->delete();
         }
 
         // 6. Delete the main user
