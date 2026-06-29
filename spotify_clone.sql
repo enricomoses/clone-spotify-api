@@ -877,7 +877,6 @@ JOIN
     artists a ON sa.id_artist = a.id_artist
 WHERE 
     u.id_user = 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf' -- Filter user Enrico
-    AND h.played_at BETWEEN '2026-06-20 00:00:00' AND '2026-06-25 23:59:59'
 ORDER BY 
     h.played_at DESC;
 
@@ -886,27 +885,32 @@ ORDER BY
 -- B. REPORT AGREGASI DATA (2 Query)
 -- -----------------------------------------------------
 
--- Query 1: Jumlah Transaksi Pemutaran Lagu dan Total Durasi Dengar per Pengguna (Minimal 3 kali streaming)
+-- Query 1: Statistik Pemutaran Lagu per Artis (Halaman Portal Artis - Analytics / Top Songs)
+-- Menghitung total pemutaran dan total durasi dengar per lagu milik artis tertentu (Taylor Swift 'A_01') yang memiliki minimal 3 kali streaming.
 SELECT 
-    u.id_user,
-    u.name AS user_name,
+    s.title AS song_title,
     COUNT(h.id_stream) AS total_streams,
     SUM(h.play_duration) AS total_play_duration_seconds,
     ROUND(AVG(h.play_duration), 2) AS avg_play_duration_seconds
 FROM 
-    users u
+    songs s
 JOIN 
-    song_streaming_histories h ON u.id_user = h.id_user
+    song_artist sa ON s.id_song = sa.id_song
+JOIN 
+    song_streaming_histories h ON s.id_song = h.id_song
+WHERE 
+    sa.id_artist = 'A_01'
 GROUP BY 
-    u.id_user, 
-    u.name
+    s.id_song, 
+    s.title
 HAVING 
     COUNT(h.id_stream) >= 3
 ORDER BY 
     total_streams DESC;
 
 
--- Query 2: Jumlah Lagu Terunggah per Album oleh Artis (Minimal 2 lagu per album)
+-- Query 2: Jumlah Lagu Terunggah per Album oleh Artis (Halaman Detail Album / Album Catalog)
+-- Menampilkan total lagu dan total durasi musik untuk masing-masing album (Minimal 2 lagu per album).
 SELECT 
     al.id_album,
     al.title AS album_title,
@@ -936,9 +940,9 @@ ORDER BY
 -- D. REPORT BUSINESS INSIGHT (2 Query)
 -- -----------------------------------------------------
 
--- Query 1: Analisis Lagu Paling Populer (Most Popular Songs Rank)
--- Pertanyaan Bisnis: Lagu mana saja yang paling populer (paling sering diputar) dalam sistem, dan siapa artis di balik lagu tersebut?
--- Alasan Bisnis: Membantu operasional dalam menyusun rekomendasi & penempatan playlist utama, serta transparansi royalti artis.
+-- Query 1: Analisis Lagu Paling Populer (Halaman Discover Weekly / Top Hits)
+-- Pertanyaan Bisnis: Lagu mana saja yang paling populer (paling sering diputar) secara global di platform?
+-- Alasan Bisnis: Menyusun playlist kurasi rekomendasi Discover Weekly dan acuan perhitungan royalti artis.
 SELECT 
     s.id_song,
     s.title AS song_title,
@@ -968,26 +972,27 @@ ORDER BY
 LIMIT 10;
 
 
--- Query 2: Analisis Jam Sibuk Aktivitas Pengguna (Peak Streaming Hour Analysis)
--- Pertanyaan Bisnis: Pada jam berapa pengguna paling aktif mendengarkan lagu di platform?
--- Alasan Bisnis: Untuk alokasi server (scale-up resource), optimalisasi penayangan iklan audio premium, dan penentuan jam pemeliharaan sistem (maintenance).
+-- Query 2: Analisis Artis Terpopuler (Halaman Beranda - Popular Artists)
+-- Pertanyaan Bisnis: Siapa saja artis yang memiliki jumlah pemutaran (exposure) tertinggi secara global di platform?
+-- Alasan Bisnis: Membantu tim marketing mengidentifikasi artis-artis dengan basis penggemar terbesar untuk program promosi eksklusif atau iklan komersial terarah.
 SELECT 
-    EXTRACT(HOUR FROM h.played_at) AS play_hour,
-    CASE 
-        WHEN EXTRACT(HOUR FROM h.played_at) BETWEEN 0 AND 5 THEN 'Dini Hari (00:00 - 05:59)'
-        WHEN EXTRACT(HOUR FROM h.played_at) BETWEEN 6 AND 11 THEN 'Pagi Hari (06:00 - 11:59)'
-        WHEN EXTRACT(HOUR FROM h.played_at) BETWEEN 12 AND 17 THEN 'Siang-Sore (12:00 - 17:59)'
-        ELSE 'Malam Hari (18:00 - 23:59)'
-    END AS time_segment,
-    COUNT(h.id_stream) AS total_plays,
-    COUNT(DISTINCT h.id_user) AS unique_listeners
+    a.id_artist, 
+    a.name AS artist_name, 
+    COUNT(h.id_stream) AS total_streams
 FROM 
-    song_streaming_histories h
+    artists a
+JOIN 
+    song_artist sa ON a.id_artist = sa.id_artist
+JOIN 
+    songs s ON sa.id_song = s.id_song
+LEFT JOIN 
+    song_streaming_histories h ON s.id_song = h.id_song
 GROUP BY 
-    play_hour,
-    time_segment
+    a.id_artist, 
+    a.name
 ORDER BY 
-    total_plays DESC;
+    total_streams DESC
+LIMIT 12;
 
 
 -- =====================================================
@@ -1039,28 +1044,27 @@ JOIN songs s ON sa.id_song = s.id_song
 LEFT JOIN song_streaming_histories h ON s.id_song = h.id_song
 GROUP BY a.id_artist, a.name, a.profile_picture
 ORDER BY total_streams DESC
-LIMIT 6;
+LIMIT 12;
 
 
--- D. ALBUMS (DAFTAR ALBUM)
--- Menampilkan daftar seluruh album beserta nama artis pembuatnya.
-SELECT al.id_album, al.title, al.cover_image, al.release, 
-       COALESCE(string_agg(art.name, ', '), 'Unknown Artist') AS artist_names
+-- D. ALBUMS (DAFTAR ALBUM / ALBUM TERPOPULER)
+-- Menampilkan daftar seluruh album diurutkan berdasarkan total pemutaran lagu di dalamnya (untuk fitur Popular Album di front end).
+SELECT al.id_album, al.title, al.cover_image, COUNT(h.id_stream) AS total_streams
 FROM albums al
-LEFT JOIN artist_album aa ON al.id_album = aa.id_album
-LEFT JOIN artists art ON aa.id_artist = art.id_artist
-GROUP BY al.id_album, al.title, al.cover_image, al.release
-ORDER BY al.release DESC;
+JOIN songs s ON al.id_album = s.id_album
+LEFT JOIN song_streaming_histories h ON s.id_song = h.id_song
+GROUP BY al.id_album, al.title, al.cover_image
+ORDER BY total_streams DESC;
 
 
--- E. PODCASTS (DAFTAR PODCAST)
--- Menampilkan daftar seluruh podcast beserta pembuatnya dan kategori podcast tersebut.
-SELECT p.id_podcast, p.name AS podcast_name, p.cover_image, p.about, 
-       u.name AS creator_name, pc.name AS category_name
+-- E. PODCASTS (DAFTAR PODCAST / PODCAST TERPOPULER)
+-- Menampilkan daftar seluruh podcast diurutkan berdasarkan total pemutaran episodenya (untuk fitur Popular Podcast di front end).
+SELECT p.id_podcast, p.name, p.cover_image, COUNT(h.id_stream) AS total_streams
 FROM podcasts p
-JOIN users u ON p.id_user = u.id_user
-JOIN podcast_categories pc ON p.id_podcast_category = pc.id_podcast_category
-ORDER BY p.name ASC;
+JOIN episodes e ON p.id_podcast = e.id_podcast
+LEFT JOIN episode_streaming_histories h ON e.id_episode = h.id_episode
+GROUP BY p.id_podcast, p.name, p.cover_image
+ORDER BY total_streams DESC;
 
 
 -- F. PLAYLISTS (DAFTAR PLAYLIST)
@@ -1122,7 +1126,11 @@ WHERE a.name ILIKE '%Evaluasi%'
 UNION ALL
 SELECT 'Album' AS result_type, al.id_album AS id, al.title AS name, al.release::text AS detail
 FROM albums al
-WHERE al.title ILIKE '%Evaluasi%';
+WHERE al.title ILIKE '%Evaluasi%'
+UNION ALL
+SELECT 'User' AS result_type, u.id_user AS id, u.name AS name, u.country AS detail
+FROM users u
+WHERE u.name ILIKE '%Evaluasi%';
 
 
 -- K. GENRE (KATEGORI PLAYLIST)
