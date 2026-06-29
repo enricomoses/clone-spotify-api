@@ -1,31 +1,6 @@
 -- =====================================================
 -- DATABASE DDL (CREATE TABLES AND CONSTRAINTS)
 -- =====================================================
-
-DROP TABLE IF EXISTS episode_streaming_histories CASCADE;
-DROP TABLE IF EXISTS song_streaming_histories CASCADE;
-DROP TABLE IF EXISTS user_followuser CASCADE;
-DROP TABLE IF EXISTS user_followpodcast CASCADE;
-DROP TABLE IF EXISTS user_followplaylist CASCADE;
-DROP TABLE IF EXISTS user_followartist CASCADE;
-DROP TABLE IF EXISTS user_likedsong CASCADE;
-DROP TABLE IF EXISTS playlist_collaborator CASCADE;
-DROP TABLE IF EXISTS playlist_song CASCADE;
-DROP TABLE IF EXISTS artist_concert CASCADE;
-DROP TABLE IF EXISTS artist_album CASCADE;
-DROP TABLE IF EXISTS song_artist CASCADE;
-DROP TABLE IF EXISTS artist_galleries CASCADE;
-DROP TABLE IF EXISTS episodes CASCADE;
-DROP TABLE IF EXISTS podcasts CASCADE;
-DROP TABLE IF EXISTS playlists CASCADE;
-DROP TABLE IF EXISTS songs CASCADE;
-DROP TABLE IF EXISTS concerts CASCADE;
-DROP TABLE IF EXISTS podcast_categories CASCADE;
-DROP TABLE IF EXISTS playlist_categories CASCADE;
-DROP TABLE IF EXISTS albums CASCADE;
-DROP TABLE IF EXISTS artists CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-
 -- Table: users
 CREATE TABLE users (
     id_user varchar(255) NOT NULL,
@@ -428,7 +403,6 @@ INSERT INTO concerts (id_concert, location, location_url, event_at, ticket_url, 
 INSERT INTO concerts (id_concert, location, location_url, event_at, ticket_url, created_at, updated_at) VALUES ('CON_JOJI', 'JIExpo Kemayoran, Jakarta', 'https://maps.google.com', '2026-11-22 19:00:00', 'https://loket.com', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
 
 -- Data for: songs
-INSERT INTO songs (id_song, title, duration, id_album, audio_url, created_at, updated_at) VALUES ('S_999', 'Lagu Sukses', '210', NULL, NULL, '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO songs (id_song, title, duration, id_album, audio_url, created_at, updated_at) VALUES ('212ede59-e53c-4f26-bfdb-c62599aabbb6', 'edamame', '141', NULL, 'https://res.cloudinary.com/dmjjmsha3/video/upload/v1781429321/spotify-clone/audio/songs/buekgzdhzeuaissjczna.mp3', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO songs (id_song, title, duration, id_album, audio_url, created_at, updated_at) VALUES ('S_01', 'Blank Space', '231', 'ALB_01', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO songs (id_song, title, duration, id_album, audio_url, created_at, updated_at) VALUES ('S_02', 'Style', '231', 'ALB_01', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
@@ -722,22 +696,17 @@ INSERT INTO user_followpodcast (id_user, id_podcast, created_at, updated_at) VAL
 
 -- Data for: song_streaming_histories
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('989a5658-49e3-4a57-852c-8a66156b1228', '2026-06-09 20:10:14', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_03', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
-INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('8bb0d979-0fed-45c2-bd55-95467f043fcd', '2026-06-09 20:11:12', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_999', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('ad47337e-9598-46ee-9f62-6d4ee377dc8d', '2026-06-09 20:11:13', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_05', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('28b5761a-dfe9-43a0-a5be-ace048aea743', '2026-06-09 20:13:51', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_03', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('356e955e-2840-4914-ad17-cf6c1dfd58e6', '2026-06-09 20:13:52', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_05', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
-INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('7d385182-7004-4c92-bb2b-3673efa25c3b', '2026-06-09 20:13:54', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_999', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('d1705a3d-434f-436f-bb3c-f9e87ff7e462', '2026-06-09 20:13:55', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_01', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
-INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('1e0ae4e9-7c0d-4bc2-baf1-be129a756d82', '2026-06-09 20:13:57', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_999', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('47b72344-91f4-4e8d-a94c-37d93ff58ef1', '2026-06-09 20:13:58', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_05', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('3bdbaddd-8383-4e89-9b95-74e5329fa8c3', '2026-06-09 22:06:01', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_03', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('96c580ef-40ed-41ab-98c5-62043657c68b', '2026-06-09 22:07:01', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_03', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('abe2bb56-26c4-4093-9b50-35eb444139a0', '2026-06-09 22:13:04', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_03', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('cc962a50-cbda-4922-b53a-3239912e33eb', '2026-06-09 22:14:09', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_05', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
-INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('d0a4c912-7028-451a-96b5-af3d344b22b6', '2026-06-09 22:14:44', '4', 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_999', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('a527d115-7143-4da8-9849-61ee7af97293', '2026-06-12 10:24:06', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_05', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('80ab2c6f-7103-4cda-84f9-cad49a1af03c', '2026-06-12 10:35:24', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_05', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
-INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('f27c07c1-f3b1-4b3a-95ab-7a84b74bd5bf', '2026-06-12 12:44:27', '4', 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_999', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('3bc88b32-3693-4cd0-bb27-e2091b6a1ff8', '2026-06-12 12:44:36', '6', 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_03', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('8b343466-5938-4154-ab20-e5f0e8f35a12', '2026-06-12 12:44:48', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_01', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('7f3df93b-367a-4a09-aeae-10aa7d638d1b', '2026-06-12 15:21:56', NULL, 'c75b7ee7-b21f-4105-a7f5-d5278bc38283', 'S_01', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
@@ -760,7 +729,6 @@ INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_us
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('dd01d73a-e55d-428f-b74d-ddda60f48d8b', '2026-06-18 23:37:41', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'd9b753ab-1077-4f5f-8f8a-9bf9844cf194', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('aadbf7a4-a0ae-4a53-9e13-bd818273e401', '2026-06-18 23:37:43', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'ce5edf44-9e71-40a8-b4ba-0a4cdfb98777', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('bd6a6f66-2ed4-4a96-b213-bb64b6823a08', '2026-06-18 23:37:45', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'b99e6d2c-91c2-46a2-a47a-0c1abd2c5b1e', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
-INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('5468a4d9-913d-4df9-bffb-0c33ab1e09dc', '2026-06-18 23:40:17', NULL, '54f4fc17-0c13-4382-a069-a716156e4802', 'S_999', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('aac8aa5e-501a-4c26-9887-21853c8197e1', '2026-06-18 23:41:10', NULL, '54f4fc17-0c13-4382-a069-a716156e4802', 'e6144aff-a92b-4979-8b45-d8d87c73c691', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('ad6d7b24-f69f-4395-9e8d-26634ddd8a64', '2026-06-18 23:40:21', NULL, '54f4fc17-0c13-4382-a069-a716156e4802', 'S_03', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('b129b67d-2efb-401a-9b4d-d770a448e751', '2026-06-18 23:40:21', NULL, '54f4fc17-0c13-4382-a069-a716156e4802', 'S_05', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
@@ -769,7 +737,6 @@ INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_us
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('22ad2575-c098-494f-b7d2-1a04f964d32b', '2026-06-19 13:38:47', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_05', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('f8c5581c-7d89-44b1-8197-1a3ab8052b7a', '2026-06-19 22:26:00', NULL, '90b0f848-6607-4497-88ff-97ed75c71390', 'S_03', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('e62c22d9-a92e-4e83-af1a-48d68f0ec1fb', '2026-06-19 22:25:49', '8', '90b0f848-6607-4497-88ff-97ed75c71390', 'S_05', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
-INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('7c58efee-cef3-4300-bc05-50e76b30bdbb', '2026-06-19 22:26:03', NULL, '90b0f848-6607-4497-88ff-97ed75c71390', 'S_999', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('cc2449c1-86e9-46d4-a7bd-0f151d58f939', '2026-06-19 22:26:05', '11', '90b0f848-6607-4497-88ff-97ed75c71390', 'S_01', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('a8249bd9-a010-41b1-bca6-80d87a673758', '2026-06-19 22:26:22', NULL, '90b0f848-6607-4497-88ff-97ed75c71390', 'b99e6d2c-91c2-46a2-a47a-0c1abd2c5b1e', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('b9579227-39f3-47c7-886d-29ea1a2784d1', '2026-06-19 22:26:29', NULL, '90b0f848-6607-4497-88ff-97ed75c71390', 'c6631a3c-d881-406d-abda-f578a4a91212', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
@@ -829,7 +796,6 @@ INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_us
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('stream_029', '2026-06-26 15:45:00', '208', '04d8d10e-2b96-4c65-a17a-f0bde9dbe72c', 'S_05', '2026-06-28 17:54:33.913988+00', '2026-06-28 17:54:33.913988+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('stream_030', '2026-06-26 21:00:00', '231', '83e6d65e-5e46-4019-9bbb-aa1b712e1c48', 'S_01', '2026-06-28 17:54:33.913988+00', '2026-06-28 17:54:33.913988+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('39022e22-28c9-4411-bef6-7a98de3c2c26', '2026-06-29 00:57:48', '9', 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_05', '2026-06-28 17:57:48.871652+00', '2026-06-28 17:57:48.871652+00');
-INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('91c36348-456a-4ef2-ae2c-46e7e201db4b', '2026-06-29 00:58:20', '6', 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_999', '2026-06-28 17:58:20.981044+00', '2026-06-28 17:58:20.981044+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('84853551-a3d3-487e-a3ef-9bb05b4a37e7', '2026-06-29 00:58:32', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_01', '2026-06-28 17:58:32.814796+00', '2026-06-28 17:58:32.814796+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('41888a01-de9e-4eb2-82fa-4dda27423b93', '2026-06-29 01:00:14', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_01', '2026-06-28 18:00:15.263855+00', '2026-06-28 18:00:15.263855+00');
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('17276728-f700-4ac1-9469-d1197746d6d7', '2026-06-29 01:00:20', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_02', '2026-06-28 18:00:20.740037+00', '2026-06-28 18:00:20.740037+00');
