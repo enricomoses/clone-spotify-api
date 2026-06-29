@@ -686,13 +686,26 @@ INSERT INTO user_followartist (id_user, id_artist, created_at, updated_at) VALUE
 INSERT INTO user_followartist (id_user, id_artist, created_at, updated_at) VALUES ('691b4806-8271-4857-a588-501c27fff15d', 'A_11', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
 
 -- Data for: user_followplaylist
--- (No data)
+INSERT INTO user_followplaylist (id_user, id_playlist, created_at, updated_at) VALUES ('e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'PL_RANDOM_01', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
+INSERT INTO user_followplaylist (id_user, id_playlist, created_at, updated_at) VALUES ('e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'PL_RANDOM_02', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
+INSERT INTO user_followplaylist (id_user, id_playlist, created_at, updated_at) VALUES ('04d8d10e-2b96-4c65-a17a-f0bde9dbe72c', 'PL_RANDOM_03', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
+INSERT INTO user_followplaylist (id_user, id_playlist, created_at, updated_at) VALUES ('c75b7ee7-b21f-4105-a7f5-d5278bc38283', 'PL_01', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
+INSERT INTO user_followplaylist (id_user, id_playlist, created_at, updated_at) VALUES ('83e6d65e-5e46-4019-9bbb-aa1b712e1c48', 'PL_RANDOM_01', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
+INSERT INTO user_followplaylist (id_user, id_playlist, created_at, updated_at) VALUES ('83e6d65e-5e46-4019-9bbb-aa1b712e1c48', 'PL_RANDOM_02', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
+INSERT INTO user_followplaylist (id_user, id_playlist, created_at, updated_at) VALUES ('90b0f848-6607-4497-88ff-97ed75c71390', 'PL_RANDOM_03', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
+INSERT INTO user_followplaylist (id_user, id_playlist, created_at, updated_at) VALUES ('691b4806-8271-4857-a588-501c27fff15d', 'PL_RANDOM_02', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
 
 -- Data for: user_followpodcast
 INSERT INTO user_followpodcast (id_user, id_podcast, created_at, updated_at) VALUES ('e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'POD_01', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
 
 -- Data for: user_followuser
--- (No data)
+INSERT INTO user_followuser (follower_id, followed_id, created_at, updated_at) VALUES ('04d8d10e-2b96-4c65-a17a-f0bde9dbe72c', 'c75b7ee7-b21f-4105-a7f5-d5278bc38283', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
+INSERT INTO user_followuser (follower_id, followed_id, created_at, updated_at) VALUES ('c75b7ee7-b21f-4105-a7f5-d5278bc38283', '04d8d10e-2b96-4c65-a17a-f0bde9dbe72c', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
+INSERT INTO user_followuser (follower_id, followed_id, created_at, updated_at) VALUES ('90b0f848-6607-4497-88ff-97ed75c71390', 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
+INSERT INTO user_followuser (follower_id, followed_id, created_at, updated_at) VALUES ('691b4806-8271-4857-a588-501c27fff15d', 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
+INSERT INTO user_followuser (follower_id, followed_id, created_at, updated_at) VALUES ('e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', '04d8d10e-2b96-4c65-a17a-f0bde9dbe72c', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
+INSERT INTO user_followuser (follower_id, followed_id, created_at, updated_at) VALUES ('54f4fc17-0c13-4382-a069-a716156e4802', '691b4806-8271-4857-a588-501c27fff15d', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
+INSERT INTO user_followuser (follower_id, followed_id, created_at, updated_at) VALUES ('83e6d65e-5e46-4019-9bbb-aa1b712e1c48', '04d8d10e-2b96-4c65-a17a-f0bde9dbe72c', '2026-06-28 18:14:14.157497+00', '2026-06-28 18:14:14.157497+00');
 
 -- Data for: song_streaming_histories
 INSERT INTO song_streaming_histories (id_stream, played_at, play_duration, id_user, id_song, created_at, updated_at) VALUES ('989a5658-49e3-4a57-852c-8a66156b1228', '2026-06-09 20:10:14', NULL, 'e0362ced-2fbe-4f25-8cb4-433c8c8a8bdf', 'S_03', '2026-06-26 19:54:49.101417+00', '2026-06-26 19:54:49.101417+00');
