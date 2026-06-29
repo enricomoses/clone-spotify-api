@@ -86,7 +86,6 @@ class ArtistController extends Controller
             $artistCount = DB::table('song_artist')->where('id_song', $songId)->count();
 
             if ($artistCount <= 1) {
-                // This song is only owned by this artist -> delete song along with its relations
                 $song = Song::where('id_song', $songId)->first();
                 if ($song) {
                     $song->artists()->detach();
@@ -98,28 +97,20 @@ class ArtistController extends Controller
             }
         }
 
-        // 2. Detach song_artist relation for songs that still have other artists
         $artist->songs()->detach();
 
-        // 3. Detach album relation (artist_album table) - album is not deleted because it can belong to other artists
         $artist->albums()->detach();
 
-        // 4. Detach concert relation (artist_concert table) - concert is not deleted because it can belong to other artists
         $artist->concerts()->detach();
 
-        // 5. Delete gallery (artist_galleries table) - gallery belongs to 1 artist, so delete it
         DB::table('artist_galleries')->where('id_artist', $id)->delete();
 
-        // 6. Delete all followers (user_followartist table)
         DB::table('user_followartist')->where('id_artist', $id)->delete();
 
-        // 7. Delete main artist data
         $artist->delete();
 
         return response()->json(['message' => 'Artist and all related data deleted successfully'], 200);
     }
-
-    // --- RELATION MANAGEMENT FROM ARTIST SIDE ---
 
     public function addAlbumToArtist(Request $request, $id)
     {
@@ -157,7 +148,6 @@ class ArtistController extends Controller
         $artist = Artist::query()->where('id_artist', $id)->first();
         if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
 
-        // Check if song still has other artists after detach
         $artistCount = DB::table('song_artist')->where('id_song', $song_id)->count();
         if ($artistCount <= 1) {
             return response()->json([
@@ -169,7 +159,6 @@ class ArtistController extends Controller
         return response()->json(['message' => 'Song removed from artist profile'], 200);
     }
 
-    // --- CONCERT FEATURE ---
     public function getConcerts($id)
     {
         $artist = Artist::with('concerts')->where('id_artist', $id)->first();
@@ -178,7 +167,6 @@ class ArtistController extends Controller
         return response()->json(['data' => $artist->concerts], 200);
     }
 
-    // --- GALLERY FEATURE ---
     public function getGallery($id)
     {
         $artist = Artist::with('galleries')->where('id_artist', $id)->first();

@@ -39,7 +39,6 @@ class SongStreamingHistoryController extends Controller
         return response()->json(['message' => 'Song stream detail', 'data' => $stream], 200);
     }
 
-    // --- LOGIC WHEN PAUSE IS PRESSED OR SONG FINISHES ---
     public function update(Request $request, $id)
     {
         $stream = SongStreamingHistory::query()->where('id_stream', $id)->first();
@@ -62,7 +61,6 @@ class SongStreamingHistoryController extends Controller
         return response()->json(['message' => 'Song stream record deleted successfully'], 200);
     }
 
-    // --- SONG STREAMING HISTORY PER USER ---
     public function getUserHistory($userId)
     {
         $history = SongStreamingHistory::with(['song.artists', 'song.album'])

@@ -67,10 +67,7 @@ class PlaylistCategoryController extends Controller
         if (!$category) {
             return response()->json(['message' => 'Category not found'], 404);
         }
-
-        // ==========================================
-        // RELATIONS CLEANUP PROCESS
-        // ==========================================
+        
         DB::table('playlists')
             ->where('id_playlist_category', $id)
             ->update(['id_playlist_category' => null]);

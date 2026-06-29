@@ -72,31 +72,20 @@ class PodcastController extends Controller
             return response()->json(['message' => 'Podcast not found'], 404);
         }
 
-        // ==========================================
-        // CASCADE DELETE PROCESS (RELATIONS CLEANUP)
-        // ==========================================
-
-        // 1. Detach relations in user_followpodcast pivot table (remove all followers)
         DB::table('user_followpodcast')->where('id_podcast', $id)->delete();
 
-        // 2. Find all episodes belonging to this podcast
         $episodes = DB::table('episodes')->where('id_podcast', $id)->pluck('id_episode');
         
         if ($episodes->isNotEmpty()) {
-            // 3. Delete streaming history of those episodes
             DB::table('episode_streaming_histories')->whereIn('id_episode', $episodes)->delete();
             
-            // 4. Delete the episodes
             DB::table('episodes')->where('id_podcast', $id)->delete();
         }
 
-        // 5. After all relations are cleaned, delete the main podcast
         $podcast->delete();
 
         return response()->json(['message' => 'Podcast, its episodes, and followers deleted successfully'], 200);
     }
-
-    // --- ENDPOINT TO VIEW EPISODES OF A PODCAST ---
     public function getEpisodes($id)
     {
         $podcast = Podcast::with('episodes')->where('id_podcast', $id)->first();

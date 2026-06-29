@@ -28,7 +28,6 @@ class PlaylistController extends Controller
         return response()->json(['message' => 'Playlist detail', 'data' => $playlist], 200);
     }
 
-    // --- CRUD BASIC ---
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -107,26 +106,17 @@ class PlaylistController extends Controller
             return response()->json(['message' => 'Only the Owner can delete the playlist'], 403);
         }
 
-        // ==========================================
-        // CASCADE DELETE PROCESS (RELATIONS CLEANUP)
-        // ==========================================
-
-        // 1. Detach relations with collaborators/creators (playlist_collaborator table)
         $playlist->collaborators()->detach();
 
-        // 2. Detach relations with songs in the playlist (playlist_song table)
         $playlist->songs()->detach();
 
-        // 3. Detach relations with users following this playlist (user_followplaylist table)
         DB::table('user_followplaylist')->where('id_playlist', $id)->delete();
 
-        // 4. Once all dependencies are cleaned up, safely delete the main playlist
         $playlist->delete();
 
         return response()->json(['message' => 'Playlist and all its relations deleted successfully'], 200);
     }
 
-    // --- PLAYLIST CONTENT MANAGEMENT ---
     public function addSong(Request $request, $id)
     {
         $playlist = Playlist::query()->where('id_playlist', $id)->first();
@@ -137,7 +127,6 @@ class PlaylistController extends Controller
             'id_user' => 'required|string|exists:users,id_user'
         ]);
 
-        // Validation: only Owner or Editor can add songs
         $hasAccess = PlaylistCollaborator::where('id_playlist', $id)
             ->where('id_user', $request->id_user)
             ->whereIn('role', ['Owner', 'Editor'])
@@ -156,7 +145,6 @@ class PlaylistController extends Controller
         $playlist = Playlist::query()->where('id_playlist', $id)->first();
         if (!$playlist) return response()->json(['message' => 'Playlist not found'], 404);
 
-        // Validation: only Owner or Editor can delete songs
         $idUser = $request->query('id_user') ?? $request->id_user;
         if (!$idUser) {
             return response()->json(['message' => 'Parameter id_user is required for validation'], 400);
@@ -175,7 +163,6 @@ class PlaylistController extends Controller
         return response()->json(['message' => 'Song removed from playlist'], 200);
     }
 
-    // --- COLLABORATOR MANAGEMENT ---
     public function addCollaborator(Request $request, $id)
     {
         $playlist = Playlist::query()->where('id_playlist', $id)->first();
@@ -186,7 +173,6 @@ class PlaylistController extends Controller
             'id_user' => 'required|string|exists:users,id_user' // User making the request (must be Owner)
         ]);
 
-        // Validation: only Owner can add collaborators
         $isOwner = PlaylistCollaborator::where('id_playlist', $id)
             ->where('id_user', $request->id_user)
             ->where('role', 'Owner')
@@ -196,7 +182,6 @@ class PlaylistController extends Controller
             return response()->json(['message' => 'Only the Owner can add collaborators'], 403);
         }
 
-        // Check if user to be added is already a collaborator
         $alreadyCollaborator = PlaylistCollaborator::where('id_playlist', $id)
             ->where('id_user', $request->user_id)
             ->exists();
@@ -205,7 +190,6 @@ class PlaylistController extends Controller
             return response()->json(['message' => 'User is already a collaborator in this playlist'], 400);
         }
 
-        // Added collaborator always gets 'Editor' role
         $playlist->collaborators()->attach($request->user_id, ['role' => 'Editor']);
         $playlist->load('collaborators');
 
@@ -220,7 +204,6 @@ class PlaylistController extends Controller
             return response()->json(['message' => 'Playlist not found'], 404);
         }
 
-        // Cannot delete user whose role is Owner
         $targetRole = PlaylistCollaborator::where('id_playlist', $id)
             ->where('id_user', $user_id)
             ->first();
@@ -233,7 +216,6 @@ class PlaylistController extends Controller
             return response()->json(['message' => 'Cannot remove the Owner from the playlist. Delete the playlist to remove ownership.'], 400);
         }
 
-        // Validation: only Owner can remove collaborators
         $idUser = $request->query('id_user') ?? $request->id_user;
         if ($idUser) {
             $isOwner = PlaylistCollaborator::where('id_playlist', $id)

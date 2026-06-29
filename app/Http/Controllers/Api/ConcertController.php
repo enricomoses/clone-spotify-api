@@ -23,7 +23,6 @@ class ConcertController extends Controller
         return response()->json(['message' => 'Concert detail', 'data' => $concert], 200);
     }
 
-    // --- CRUD BASIC ---
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -43,13 +42,10 @@ class ConcertController extends Controller
             'ticket_url' => $validated['ticket_url'],
         ];
 
-        // 1. Save data to concert table
         $concert = Concert::create($concertData);
 
-        // 2. Save Many-to-Many relation to artist_concert pivot table
         $concert->artists()->attach($validated['artist_ids']);
 
-        // 3. Load relations so response data includes the artist list
         $concert->load('artists');
 
         return response()->json(['message' => 'Concert added successfully', 'data' => $concert], 201);
@@ -93,7 +89,6 @@ class ConcertController extends Controller
         return response()->json(['message' => 'Concert deleted successfully'], 200);
     }
 
-    // --- MANUAL ARTIST MANAGEMENT ON CONCERT (ADDITIONAL ENDPOINTS) ---
     public function addArtist(Request $request, $id)
     {
         $concert = Concert::query()->where('id_concert', $id)->first();

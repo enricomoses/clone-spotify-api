@@ -78,10 +78,8 @@ class UserController extends Controller
             'country' => 'nullable|string'
         ]);
 
-        // 2. Auto-generate UUID v4
         $validated['id_user'] = Str::uuid()->toString();
 
-        // 3. Save to database
         $user = User::create($validated);
 
         return response()->json(['message' => 'User created successfully', 'data' => $user], 201);
@@ -115,7 +113,7 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:100',
-            'birthday' => 'nullable|date|before:today', // Constraint: Birthday must be before today
+            'birthday' => 'nullable|date|before:today',
             'gender' => 'nullable|string',
             'country' => 'nullable|string',
             'profile_picture' => 'nullable|string',
@@ -179,27 +177,21 @@ class UserController extends Controller
             }
         }
 
-        // Delete remaining collaborator entries (for playlists where user was only Editor)
         DB::table('playlist_collaborator')->where('id_user', $id)->delete();
 
-        // 5. Handle Podcasts created by this user
         $podcasts = DB::table('podcasts')->where('id_user', $id)->pluck('id_podcast');
         foreach ($podcasts as $podcastId) {
-            // Delete podcast followers
             DB::table('user_followpodcast')->where('id_podcast', $podcastId)->delete();
 
-            // Delete episodes along with their streaming history
             $episodes = DB::table('episodes')->where('id_podcast', $podcastId)->pluck('id_episode');
             if ($episodes->isNotEmpty()) {
                 DB::table('episode_streaming_histories')->whereIn('id_episode', $episodes)->delete();
                 DB::table('episodes')->where('id_podcast', $podcastId)->delete();
             }
 
-            // Delete podcast
             DB::table('podcasts')->where('id_podcast', $podcastId)->delete();
         }
 
-        // 6. Delete the main user
         $user->delete();
         return response()->json(['message' => 'User and all associated data deleted successfully'], 200);
     }

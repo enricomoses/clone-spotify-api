@@ -39,7 +39,6 @@ class EpisodeStreamingHistoryController extends Controller
         return response()->json(['message' => 'Episode stream detail', 'data' => $stream], 200);
     }
 
-    // --- LOGIC WHEN PAUSE IS PRESSED OR EPISODE FINISHES ---
     public function update(Request $request, $id)
     {
         $stream = EpisodeStreamingHistory::query()->where('id_stream', $id)->first();
@@ -62,7 +61,6 @@ class EpisodeStreamingHistoryController extends Controller
         return response()->json(['message' => 'Episode stream record deleted successfully'], 200);
     }
 
-    // --- EPISODE STREAMING HISTORY PER USER ---
     public function getUserHistory($userId)
     {
         $history = EpisodeStreamingHistory::with(['episode.podcast'])

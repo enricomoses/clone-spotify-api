@@ -33,13 +33,9 @@ class AlbumController extends Controller
             'cover_image' => $validated['cover_image'] ?? null,
         ];
 
-        // 1. Save data to album table
         $album = Album::create($albumData);
-
-        // 2. Save Many-to-Many relation to artist_album pivot table
         $album->artists()->attach($validated['artist_ids']);
 
-        // 3. Load relations so the response to Next.js is fully populated
         $album->load('artists', 'songs.artists');
 
         return response()->json(['message' => 'Album added successfully', 'data' => $album], 201);

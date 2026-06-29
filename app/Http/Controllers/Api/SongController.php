@@ -38,18 +38,14 @@ class SongController extends Controller
             'audio_url' => $validated['audio_url']
         ];
 
-        // 1. Save song data
         $song = Song::create($songData);
 
-        // 2. Save song creator relation to song_artist pivot table
         $song->artists()->attach($validated['artist_ids']);
 
-        // 3. (Optional) Save relation to playlist_song pivot table if provided
         if (!empty($validated['playlist_ids'])) {
             $song->playlists()->attach($validated['playlist_ids']);
         }
 
-        // Load relations so the response to Next.js is complete
         $song->load(['album', 'artists']);
 
         return response()->json(['message' => 'Song added successfully', 'data' => $song], 201);
@@ -57,7 +53,6 @@ class SongController extends Controller
 
     public function show($id)
     {
-        // Display complete song data (artists, album, and which playlists it's in)
         $song = Song::with(['album', 'artists', 'playlists'])->where('id_song', $id)->first();
         if (!$song) return response()->json(['message' => 'Song not found'], 404);
 
@@ -80,15 +75,12 @@ class SongController extends Controller
             'playlist_ids.*' => 'exists:playlists,id_playlist'
         ]);
 
-        // Update core data
         $song->update($request->only(['title', 'duration', 'id_album', 'audio_url']));
 
-        // Sync artist pivot if frontend sends new artist_ids array
         if ($request->has('artist_ids')) {
             $song->artists()->sync($validated['artist_ids']);
         }
 
-        // Sync playlist pivot if frontend sends new playlist_ids array
         if ($request->has('playlist_ids')) {
             $song->playlists()->sync($validated['playlist_ids']);
         }
@@ -104,23 +96,14 @@ class SongController extends Controller
             return response()->json(['message' => 'Song not found'], 404);
         }
 
-        // ==========================================
-        // MANUAL CASCADE DELETE PROCESS
-        // ==========================================
-
-        // 1. Detach relation with artists (song_artist table)
         $song->artists()->detach();
 
-        // 2. Detach relation with playlists (playlist_song table)
         $song->playlists()->detach();
 
-        // 3. Detach relation with users who liked the song (user_likedsong table)
         DB::table('user_likedsong')->where('id_song', $id)->delete();
 
-        // 4. Delete streaming history for this song (song_streaming_histories table)
         DB::table('song_streaming_histories')->where('id_song', $id)->delete();
 
-        // 5. After all relations are cleaned, delete the song
         $song->delete();
 
         return response()->json(['message' => 'Song and all its history and relations deleted successfully'], 200);

@@ -25,7 +25,6 @@ class EpisodeController extends Controller
         return response()->json(['message' => 'Episode detail', 'data' => $episode], 200);
     }
 
-    // --- CRUD BASIC ---
     public function store(Request $request)
     {
         $validated = $request->validate([

@@ -16,9 +16,6 @@ class MediaController extends Controller
         return new Cloudinary(env('CLOUDINARY_URL'));
     }
 
-    // ==========================================
-    // PART 1: IMAGE MANAGEMENT
-    // ==========================================
 
     public function uploadImage(Request $request)
     {
@@ -55,7 +52,6 @@ class MediaController extends Controller
             $publicId = $this->extractPublicId($request->image_url);
 
             $cloudinary = $this->getCloudinary();
-            // Default resource_type for destroy is 'image'
             $cloudinary->uploadApi()->destroy($publicId);
 
             return response()->json([
@@ -66,10 +62,6 @@ class MediaController extends Controller
             return response()->json(['message' => 'Failed to delete image: ' . $e->getMessage()], 500);
         }
     }
-
-    // ==========================================
-    // PART 2: AUDIO MANAGEMENT (SONG/EPISODE)
-    // ==========================================
 
     public function uploadAudio(Request $request)
     {
@@ -123,10 +115,6 @@ class MediaController extends Controller
             return response()->json(['message' => 'Failed to delete audio: ' . $e->getMessage()], 500);
         }
     }
-
-    // ==========================================
-    // PART 3: VIDEO MANAGEMENT (PODCAST)
-    // ==========================================
 
     public function uploadVideo(Request $request)
     {
@@ -183,10 +171,6 @@ class MediaController extends Controller
         }
     }
 
-    // ==========================================
-    // HELPER FUNCTIONS
-    // ==========================================
-
     /**
      * Extracts pure Public ID from Cloudinary URL
      */
@@ -199,12 +183,10 @@ class MediaController extends Controller
 
         $pathAfterUpload = $pathParts[1];
 
-        // Remove URL version (e.g.: v1234567890/)
         if (preg_match('/^v\d+\//', $pathAfterUpload)) {
             $pathAfterUpload = preg_replace('/^v\d+\//', '', $pathAfterUpload);
         }
 
-        // Remove file extension
         return substr($pathAfterUpload, 0, strrpos($pathAfterUpload, '.'));
     }
 }

@@ -13,7 +13,6 @@ class SocialController extends Controller
         return User::query()->where('id_user', $id)->first();
     }
 
-    // --- LIKE SONG FEATURE ---
     public function likeSong(Request $request, $id)
     {
         $user = $this->getUser($id);
@@ -34,7 +33,6 @@ class SocialController extends Controller
         return response()->json(['message' => 'Song unliked successfully'], 200);
     }
 
-    // --- FOLLOW USER FEATURE ---
     public function followUser(Request $request, $id)
     {
         $user = $this->getUser($id);
@@ -42,7 +40,6 @@ class SocialController extends Controller
 
         $request->validate(['target_id' => 'required|exists:users,id_user']);
 
-        // Prevent user from following themselves
         if ($id === $request->target_id) {
             return response()->json(['message' => 'You cannot follow yourself'], 400);
         }
@@ -60,7 +57,6 @@ class SocialController extends Controller
         return response()->json(['message' => 'User unfollowed successfully'], 200);
     }
 
-    // --- FOLLOW ARTIST FEATURE ---
     public function followArtist(Request $request, $id)
     {
         $user = $this->getUser($id);
@@ -81,7 +77,6 @@ class SocialController extends Controller
         return response()->json(['message' => 'Artist unfollowed successfully'], 200);
     }
 
-    // --- FOLLOW PLAYLIST FEATURE ---
     public function followPlaylist(Request $request, $id)
     {
         $user = $this->getUser($id);
@@ -102,7 +97,6 @@ class SocialController extends Controller
         return response()->json(['message' => 'Playlist unfollowed successfully'], 200);
     }
 
-    // --- FOLLOW PODCAST FEATURE ---
     public function followPodcast(Request $request, $id)
     {
         $user = $this->getUser($id);
