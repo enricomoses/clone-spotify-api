@@ -1135,7 +1135,11 @@ ORDER BY c.event_at ASC;
 -- Filter contoh menggunakan ID Artis Taylor Swift ('A_01')
 -- -----------------------------------------------------
 
--- A. DASHBOARD STATISTICS OVERVIEW (TOTAL SONG, TOTAL ALBUM, TOTAL STREAMS, STREAM THIS WEEK, STREAM TODAY)
+-- =====================================================
+-- PORTAL ARTIS: DASHBOARD (/artist/dashboard)
+-- =====================================================
+
+-- A. DASHBOARD STATISTICS OVERVIEW
 -- Total Songs
 SELECT COUNT(id_song) AS total_songs
 FROM song_artist
@@ -1159,17 +1163,21 @@ JOIN song_artist sa ON h.id_song = sa.id_song
 WHERE sa.id_artist = 'A_01'
   AND h.played_at >= '2026-06-22 00:00:00'; -- Jika dinamis: h.played_at >= DATE_TRUNC('week', CURRENT_DATE)
 
--- Streams Today (Hari terakhir pada timeline simulasi 2026-06-29)
-SELECT COUNT(h.id_stream) AS streams_today
-FROM song_streaming_histories h
-JOIN song_artist sa ON h.id_song = sa.id_song
+-- B. TOP 5 SONGS
+-- Menampilkan 5 lagu teratas milik artis dengan pemutaran terbanyak.
+SELECT s.title AS song_title, al.title AS album_title, COUNT(h.id_stream) AS streams_count
+FROM songs s
+JOIN song_artist sa ON s.id_song = sa.id_song
+LEFT JOIN albums al ON s.id_album = al.id_album
+LEFT JOIN song_streaming_histories h ON s.id_song = h.id_song
 WHERE sa.id_artist = 'A_01'
-  AND h.played_at >= '2026-06-29 00:00:00'; -- Jika dinamis: h.played_at >= CURRENT_DATE
+GROUP BY s.id_song, s.title, al.title
+ORDER BY streams_count DESC
+LIMIT 5;
 
-
--- B. TOP SONGS BY STREAMS
--- Menampilkan lagu-lagu milik artis yang diurutkan berdasarkan jumlah stream terbanyak.
-SELECT s.title AS song_title, COUNT(h.id_stream) AS streams_count
+-- C. STREAM DISTRIBUTION
+-- Menampilkan semua lagu milik artis beserta jumlah stream masing-masing untuk grafik distribusi.
+SELECT s.id_song, s.title AS song_title, COUNT(h.id_stream) AS streams_count
 FROM songs s
 JOIN song_artist sa ON s.id_song = sa.id_song
 LEFT JOIN song_streaming_histories h ON s.id_song = h.id_song
@@ -1178,9 +1186,45 @@ GROUP BY s.id_song, s.title
 ORDER BY streams_count DESC;
 
 
+-- =====================================================
+-- PORTAL ARTIS: ANALYTICS (/artist/analytics)
+-- =====================================================
+
+-- A. ANALYTICS STATISTICS OVERVIEW
+-- Total Streams
+SELECT COUNT(h.id_stream) AS total_streams
+FROM song_streaming_histories h
+JOIN song_artist sa ON h.id_song = sa.id_song
+WHERE sa.id_artist = 'A_01';
+
+-- Streams This Week
+SELECT COUNT(h.id_stream) AS streams_this_week
+FROM song_streaming_histories h
+JOIN song_artist sa ON h.id_song = sa.id_song
+WHERE sa.id_artist = 'A_01'
+  AND h.played_at >= '2026-06-22 00:00:00';
+
+-- Streams Today (Hari terakhir pada timeline simulasi 2026-06-29)
+SELECT COUNT(h.id_stream) AS streams_today
+FROM song_streaming_histories h
+JOIN song_artist sa ON h.id_song = sa.id_song
+WHERE sa.id_artist = 'A_01'
+  AND h.played_at >= '2026-06-29 00:00:00'; -- Jika dinamis: h.played_at >= CURRENT_DATE
+
+-- B. TOP SONGS BY STREAMS (CHART)
+-- Menampilkan lagu-lagu milik artis yang diurutkan berdasarkan jumlah stream terbanyak untuk chart utama.
+SELECT s.id_song, s.title AS song_title, COUNT(h.id_stream) AS streams_count
+FROM songs s
+JOIN song_artist sa ON s.id_song = sa.id_song
+LEFT JOIN song_streaming_histories h ON s.id_song = h.id_song
+WHERE sa.id_artist = 'A_01'
+GROUP BY s.id_song, s.title
+ORDER BY streams_count DESC;
+
 -- C. DETAILED STREAMING ANALYTICS BREAKDOWN TABLE
--- Menyajikan analisis detail per lagu meliputi durasi, total streams, streams minggu ini, dan streams hari ini.
+-- Menyajikan analisis detail per lagu meliputi judul lagu, album, durasi format MM:SS, total streams, streams minggu ini, dan streams hari ini.
 SELECT 
+    s.id_song,
     s.title AS song_title,
     al.title AS album_title,
     TO_CHAR((s.duration * INTERVAL '1 second'), 'MI:SS') AS duration,
