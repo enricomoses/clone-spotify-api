@@ -227,4 +227,38 @@ class ArtistController extends Controller
         $artist->concerts()->detach($concert_id);
         return response()->json(['message' => 'Concert removed from artist profile'], 200);
     }
+
+    /**
+     * Get songs by artist ID.
+     * GET /artists/{id}/songs
+     */
+    public function getSongs($id)
+    {
+        $artist = Artist::where('id_artist', $id)->first();
+        if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
+
+        $songs = $artist->songs()->with(['album', 'artists'])->get();
+
+        return response()->json([
+            'message' => 'Artist songs',
+            'data' => $songs
+        ], 200);
+    }
+
+    /**
+     * Get albums by artist ID.
+     * GET /artists/{id}/albums
+     */
+    public function getAlbums($id)
+    {
+        $artist = Artist::where('id_artist', $id)->first();
+        if (!$artist) return response()->json(['message' => 'Artist not found'], 404);
+
+        $albums = $artist->albums()->with('artists')->get();
+
+        return response()->json([
+            'message' => 'Artist albums',
+            'data' => $albums
+        ], 200);
+    }
 }

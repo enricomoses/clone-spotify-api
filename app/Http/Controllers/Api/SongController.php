@@ -122,4 +122,32 @@ class SongController extends Controller
             'data' => $topSongs
         ], 200);
     }
+
+    /**
+     * Search songs by title or artist name.
+     * GET /songs/search?q=keyword
+     */
+    public function search(Request $request)
+    {
+        $query = $request->query('q', '');
+
+        if (strlen($query) < 1) {
+            return response()->json(['message' => 'Search query is required', 'data' => []], 200);
+        }
+
+        $q = "%{$query}%";
+
+        $songs = Song::with(['album', 'artists'])
+            ->where('title', 'ILIKE', $q)
+            ->orWhereHas('artists', function ($qb) use ($q) {
+                $qb->where('name', 'ILIKE', $q);
+            })
+            ->limit(30)
+            ->get();
+
+        return response()->json([
+            'message' => 'Song search results',
+            'data' => $songs
+        ], 200);
+    }
 }

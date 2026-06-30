@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Playlist;
+use App\Models\Podcast;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -194,5 +195,111 @@ class UserController extends Controller
 
         $user->delete();
         return response()->json(['message' => 'User and all associated data deleted successfully'], 200);
+    }
+
+    /**
+     * Get liked songs for a user.
+     * GET /users/{id}/liked-songs
+     */
+    public function getLikedSongs($id)
+    {
+        $user = User::where('id_user', $id)->first();
+        if (!$user) return response()->json(['message' => 'User not found'], 404);
+
+        $likedSongs = $user->likedSongs()->with(['artists', 'album'])->get();
+
+        return response()->json([
+            'message' => 'User liked songs',
+            'data' => $likedSongs
+        ], 200);
+    }
+
+    /**
+     * Get recently played songs for a user (deduplicated, sorted by most recent).
+     * GET /users/{id}/recent-songs
+     */
+    public function getRecentSongs($id)
+    {
+        $user = User::where('id_user', $id)->first();
+        if (!$user) return response()->json(['message' => 'User not found'], 404);
+
+        // Get streaming history ordered by most recent
+        $history = DB::table('song_streaming_histories')
+            ->where('id_user', $id)
+            ->orderBy('played_at', 'desc')
+            ->get();
+
+        // Deduplicate: keep first (most recent) occurrence of each song
+        $seenSongIds = [];
+        $uniqueHistory = [];
+        foreach ($history as $entry) {
+            if (!in_array($entry->id_song, $seenSongIds)) {
+                $seenSongIds[] = $entry->id_song;
+                $uniqueHistory[] = $entry;
+            }
+        }
+
+        // Fetch full song details for unique songs
+        $songIds = array_column($uniqueHistory, 'id_song');
+        $songs = \App\Models\Song::with(['album', 'artists'])
+            ->whereIn('id_song', $songIds)
+            ->get()
+            ->keyBy('id_song');
+
+        // Build result with last_played_at
+        $result = [];
+        foreach ($uniqueHistory as $entry) {
+            if (isset($songs[$entry->id_song])) {
+                $song = $songs[$entry->id_song]->toArray();
+                $song['last_played_at'] = $entry->played_at;
+                $result[] = $song;
+            }
+        }
+
+        return response()->json([
+            'message' => 'User recently played songs',
+            'total_plays' => count($history),
+            'data' => $result
+        ], 200);
+    }
+
+    /**
+     * Get playlists where user is Owner or collaborator.
+     * GET /users/{id}/playlists
+     */
+    public function getUserPlaylists($id)
+    {
+        $user = User::where('id_user', $id)->first();
+        if (!$user) return response()->json(['message' => 'User not found'], 404);
+
+        $playlists = Playlist::with(['songs', 'collaborators', 'category'])
+            ->whereHas('collaborators', function ($q) use ($id) {
+                $q->where('playlist_collaborator.id_user', $id);
+            })
+            ->get();
+
+        return response()->json([
+            'message' => 'User playlists',
+            'data' => $playlists
+        ], 200);
+    }
+
+    /**
+     * Get podcasts created by user.
+     * GET /users/{id}/podcasts
+     */
+    public function getUserPodcasts($id)
+    {
+        $user = User::where('id_user', $id)->first();
+        if (!$user) return response()->json(['message' => 'User not found'], 404);
+
+        $podcasts = Podcast::with(['category', 'creator', 'episodes'])
+            ->where('id_user', $id)
+            ->get();
+
+        return response()->json([
+            'message' => 'User podcasts',
+            'data' => $podcasts
+        ], 200);
     }
 }

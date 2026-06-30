@@ -18,6 +18,8 @@ use App\Http\Controllers\Api\EpisodeController;
 use App\Http\Controllers\Api\ConcertController;
 use App\Http\Controllers\Api\EpisodeStreamingHistoryController;
 use App\Http\Controllers\Api\MediaController;
+use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\SearchController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,11 +35,26 @@ Route::post('/login/artist', [AuthController::class, 'loginArtist']);
 
 
 // ==========================================
-// 2. CUSTOM ROUTES
+// 2. HOME PAGE — Optimized Endpoints
+// ==========================================
+Route::get('/home/popular-artists', [HomeController::class, 'popularArtists']);
+Route::get('/home/popular-albums', [HomeController::class, 'popularAlbums']);
+Route::get('/home/popular-podcasts', [HomeController::class, 'popularPodcasts']);
+Route::get('/home/featured-playlists', [HomeController::class, 'featuredPlaylists']);
+Route::get('/home/user-playlists', [HomeController::class, 'userPlaylists']);
+
+// ==========================================
+// 3. GLOBAL SEARCH — Server-Side
+// ==========================================
+Route::get('/search', [SearchController::class, 'search']);
+
+// ==========================================
+// 4. CUSTOM ROUTES
 // ==========================================
 
 // Kategori & Discover
 Route::get('/songs/discover-weekly', [SongController::class, 'discoverWeekly']);
+Route::get('/songs/search', [SongController::class, 'search']);
 
 // Manajemen Isi Playlist (dengan validasi role)
 Route::post('/playlists/{id}/songs', [PlaylistController::class, 'addSong']);
@@ -56,10 +73,12 @@ Route::post('/artists/{id}/concerts', [ArtistController::class, 'addConcertToArt
 Route::delete('/artists/{id}/concerts/{concert_id}', [ArtistController::class, 'removeConcertFromArtist']);
 
 // --- ARTIS: Album ---
+Route::get('/artists/{id}/albums', [ArtistController::class, 'getAlbums']);
 Route::post('/artists/{id}/albums', [ArtistController::class, 'addAlbumToArtist']);
 Route::delete('/artists/{id}/albums/{album_id}', [ArtistController::class, 'removeAlbumFromArtist']);
 
 // --- ARTIS: Song ---
+Route::get('/artists/{id}/songs', [ArtistController::class, 'getSongs']);
 Route::post('/artists/{id}/songs', [ArtistController::class, 'addSongToArtist']);
 Route::delete('/artists/{id}/songs/{song_id}', [ArtistController::class, 'removeSongFromArtist']);
 
@@ -99,10 +118,14 @@ Route::post('/users/{id}/follow-podcast', [SocialController::class, 'followPodca
 Route::delete('/users/{id}/unfollow-podcast/{podcast_id}', [SocialController::class, 'unfollowPodcast']);
 
 // ==========================================
-// STREAMING HISTORY PER USER
+// USER-SPECIFIC DATA ENDPOINTS
 // ==========================================
 Route::get('/users/{id}/streaming-history/songs', [SongStreamingHistoryController::class, 'getUserHistory']);
 Route::get('/users/{id}/streaming-history/episodes', [EpisodeStreamingHistoryController::class, 'getUserHistory']);
+Route::get('/users/{id}/liked-songs', [UserController::class, 'getLikedSongs']);
+Route::get('/users/{id}/recent-songs', [UserController::class, 'getRecentSongs']);
+Route::get('/users/{id}/playlists', [UserController::class, 'getUserPlaylists']);
+Route::get('/users/{id}/podcasts', [UserController::class, 'getUserPodcasts']);
 
 // ==========================================
 // MEDIA STORAGE (CLOUDINARY)
@@ -126,7 +149,7 @@ Route::get('/users/search', [UserController::class, 'search']);
 Route::get('/users/{id}/profile', [UserController::class, 'getUserProfile']);
 
 // ==========================================
-// 3. RESOURCE ROUTES (CRUD Standar)
+// 5. RESOURCE ROUTES (CRUD Standar)
 // ==========================================
 Route::apiResource('users', UserController::class);
 Route::apiResource('artists', ArtistController::class);
