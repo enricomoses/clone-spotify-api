@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\EpisodeStreamingHistoryController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\ArtistAnalyticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,6 +82,10 @@ Route::delete('/artists/{id}/albums/{album_id}', [ArtistController::class, 'remo
 Route::get('/artists/{id}/songs', [ArtistController::class, 'getSongs']);
 Route::post('/artists/{id}/songs', [ArtistController::class, 'addSongToArtist']);
 Route::delete('/artists/{id}/songs/{song_id}', [ArtistController::class, 'removeSongFromArtist']);
+
+// --- ARTIS: Analytics & Dashboard ---
+Route::get('/artists/{id}/dashboard', [ArtistAnalyticsController::class, 'dashboard']);
+Route::get('/artists/{id}/analytics', [ArtistAnalyticsController::class, 'analytics']);
 
 // --- ALBUM: Manajemen Artis ---
 Route::post('/albums/{id}/artists', [AlbumController::class, 'addArtist']);
